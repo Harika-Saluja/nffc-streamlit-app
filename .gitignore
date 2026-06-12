@@ -1,0 +1,29 @@
+# --- Secrets: NEVER commit credentials ---
+.env
+.env.*
+!.env.example
+pipelines/.env
+pipelines/.env.*
+!pipelines/.env.example
+
+# --- Admin-only ingestion layer (write access) — never pushed to the student repo ---
+pipelines/
+
+# --- Local data caches ---
+data/
+*.parquet
+*.jsonl
+
+# --- Python ---
+.venv/
+venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# --- OS ---
+.DS_Store
+**/.DS_Store
+
+# --- Editor / agent config (not part of the student deliverable) ---
+.claude/

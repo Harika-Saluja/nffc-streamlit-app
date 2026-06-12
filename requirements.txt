@@ -1,0 +1,16 @@
+# Core data access for the NFFC–UoB MSc projects repo.
+# Install with:  pip install -r requirements.txt
+
+pandas
+numpy
+pyarrow            # parquet engine
+s3fs               # read parquet/json directly from Wasabi S3
+boto3              # S3 client (used by the admin ingestion layer; harmless for students)
+python-dotenv      # load credentials from .env
+tqdm               # progress bars
+requests           # fetching public injury archives (FPL/Transfermarkt datasets)
+matplotlib         # lightweight plotting in the example notebooks
+
+# Optional: only needed if you also want to pull StatsBomb directly from their API
+# (the bucket already contains the cached data, so this is not required).
+# statsbombpy
