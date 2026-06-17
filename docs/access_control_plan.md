@@ -2,7 +2,7 @@
 
 ## Model
 
-- All student data is in **one dedicated bucket**: `nffc-uob-msc-projects-2026`.
+- All student data is in **one dedicated bucket**: `nffcfirstteamstudents`.
 - The cohort shares **one read-only access key**, scoped to this bucket only.
 - Read-only is enforced at the **Wasabi IAM level** (not just convention): the
   key's policy grants `s3:GetObject` + `s3:ListBucket` and nothing else, so it
@@ -20,10 +20,10 @@
   "Statement": [
     { "Sid": "ListBucket", "Effect": "Allow",
       "Action": ["s3:ListBucket", "s3:GetBucketLocation"],
-      "Resource": "arn:aws:s3:::nffc-uob-msc-projects-2026" },
+      "Resource": "arn:aws:s3:::nffcfirstteamstudents" },
     { "Sid": "ReadObjects", "Effect": "Allow",
       "Action": ["s3:GetObject"],
-      "Resource": "arn:aws:s3:::nffc-uob-msc-projects-2026/*" }
+      "Resource": "arn:aws:s3:::nffcfirstteamstudents/*" }
   ]
 }
 ```

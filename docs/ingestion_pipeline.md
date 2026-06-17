@@ -8,7 +8,7 @@ bucket is populated from data the club already holds.
 
 ```
 StatsBomb API ──(create_season_sb_events.py)──► local cache ──(upload_statsbomb.py)──┐
-SecondSpectrum DVMS ──(tracking_download.py)──► local tracking_data ──(upload_tracking.py)──┼─► nffc-uob-msc-projects-2026
+SecondSpectrum DVMS ──(tracking_download.py)──► local tracking_data ──(upload_tracking.py)──┼─► nffcfirstteamstudents
 Catapult Connect API ──────────(ingest_gps_activity.py)─────────────────────────────┘
 ```
 
@@ -36,7 +36,7 @@ upload, skip-existing.
 There are **two different periodisations** of the same GPS data, and this is a
 common source of confusion:
 
-| | Internal bucket `nffcfootballintelligence` | Student bucket `nffc-uob-msc-projects-2026` |
+| | Internal bucket `nffcfootballintelligence` | Student bucket `nffcfirstteamstudents` |
 |---|---|---|
 | Endpoint | `/periods/{id}/athletes/{id}/sensor` | `/activities/{id}/athletes/{id}/sensor` |
 | Granularity | **Intra-session** — one file *per period* (warm-up, 1st half, …) | **Session-level** — one file *per activity (session)* |

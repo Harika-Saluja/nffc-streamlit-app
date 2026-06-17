@@ -1,6 +1,6 @@
 # Data dictionary
 
-All keys below are relative to the bucket `nffc-uob-msc-projects-2026`.
+All keys below are relative to the bucket `nffcfirstteamstudents`.
 **Player identities are real** (NDA-covered) — no anonymisation. S3 keys are
 case-sensitive and may contain spaces.
 
@@ -51,18 +51,43 @@ Catapult/activity/season={YYYY-YYYY}/date={YYYY-MM-DD}/activity_{activity_id}.pa
   *different, intra-session per-period* layout — students should use only this
   `Catapult/activity/...` data. See `docs/ingestion_pipeline.md`.
 
+## 4. Injuries + identity mapping (curated)
+
+```
+injuries/gb1_injuries_with_mapping.csv
+injuries/gb1_injuries_with_mapping.parquet
+```
+
+- **Dated injury spells with the identity mapping already joined in** — 2,021
+  spells across 667 players. This is the labels *and* the cross-id bridge in one file.
+- **Columns:** `player_id` (Transfermarkt id), `player_name`, `statsbomb_id`,
+  `second_spectrum_id` (null where no PL tracking match), `team_id`, `team_name`,
+  `season` (e.g. `2024/2025`), `reason` (injury type), `from`, `until`,
+  `days_missed`, `games_missed`.
+- **Use:** the injury labels for Project 1; join to StatsBomb via `statsbomb_id`,
+  to SecondSpectrum tracking via `second_spectrum_id`, and to public archives via
+  `player_id` (= Transfermarkt `tm_id`) / FPL by name.
+
+```python
+import nffc_data as nffc
+inj = nffc.load_parquet("injuries/gb1_injuries_with_mapping.parquet")
+```
+
 ---
 
 ## Identity & linkage
 
-A separate **identity mapping** CSV (NDA-covered, provided by the supervisor) ties:
+For the curated injury players, the mapping is **already embedded** in
+`injuries/gb1_injuries_with_mapping.*` (above): `player_id` (Transfermarkt) ↔
+`statsbomb_id` ↔ `second_spectrum_id` ↔ `player_name`. Use those columns to join
+injuries to the club datasets and to public archives:
 
-| column | source |
+| id column | links to |
 |---|---|
-| `player_name` | canonical name |
-| `opta_id` | Opta / StatsBomb `player_id`, SecondSpectrum `optaId` |
-| `tm_id` | Transfermarkt id → public injury datasets |
-| `fpl_element_id` | FPL `id` → vaastav FPL archive |
+| `statsbomb_id` | StatsBomb `player_id` (events/lineups) |
+| `second_spectrum_id` | SecondSpectrum tracking player id (`ssiId`) |
+| `player_id` (Transfermarkt) | public Transfermarkt datasets (`docs/external_data.md`) |
+| `player_name` | FPL archive (by name/team), free-text matching |
 
-Use it to join club datasets to each other and to the public injury archives
-(`docs/external_data.md`). Helper: `nffc_data.external.link_via_mapping(...)`.
+For players outside this curated file, build out the mapping the same way (see
+`docs/external_data.md`). Helper: `nffc_data.external.link_via_mapping(...)`.

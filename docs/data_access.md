@@ -1,6 +1,6 @@
 # Data access guide
 
-All project data lives in a single Wasabi S3 bucket: **`nffc-uob-msc-projects-2026`**.
+All project data lives in a single Wasabi S3 bucket: **`nffcfirstteamstudents`**.
 You access it with the Python package `nffc_data` using a **read-only** key.
 
 ## 1. Set up
@@ -19,7 +19,7 @@ Open `.env` and paste the read-only access key + secret you were given:
 WASABI_ACCESS_KEY=...
 WASABI_SECRET_KEY=...
 WASABI_REGION=eu-west-1
-WASABI_BUCKET=nffc-uob-msc-projects-2026
+WASABI_BUCKET=nffcfirstteamstudents
 ```
 
 `.env` is gitignored — **never commit it or paste keys into notebooks/code.**

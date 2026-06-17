@@ -1,7 +1,7 @@
 """Read-only access to the NFFC–UoB project datasets on Wasabi S3.
 
 The project data lives in a single Wasabi bucket (default
-``nffc-uob-msc-projects-2026``). The access key you were given is **read-only**
+``nffcfirstteamstudents``). The access key you were given is **read-only**
 and scoped to that bucket, so nothing in this module can upload, overwrite, or
 delete data — there are deliberately no write helpers here.
 
@@ -28,7 +28,7 @@ import pandas as pd
 import s3fs
 from dotenv import load_dotenv
 
-DEFAULT_BUCKET = "nffc-uob-msc-projects-2026"
+DEFAULT_BUCKET = "nffcfirstteamstudents"
 DEFAULT_REGION = "eu-west-1"
 
 

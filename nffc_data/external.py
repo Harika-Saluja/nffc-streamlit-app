@@ -26,6 +26,9 @@ import pandas as pd
 import requests
 
 VAASTAV_RAW = "https://raw.githubusercontent.com/vaastav/Fantasy-Premier-League/master/data"
+# Pre-scraped Transfermarkt datalake (public, no auth). Injuries live here — NOT
+# in dcaribou/transfermarkt-datasets or the Kaggle player-scores dataset.
+SALIMT_TM = "https://raw.githubusercontent.com/salimt/football-datasets/master/datalake/transfermarkt"
 
 
 def _fpl_season(season: str) -> str:
@@ -45,7 +48,7 @@ def _fpl_season(season: str) -> str:
 def _read_csv_url(url: str) -> pd.DataFrame:
     resp = requests.get(url, timeout=60)
     resp.raise_for_status()
-    return pd.read_csv(io.StringIO(resp.content.decode("utf-8", errors="replace")))
+    return pd.read_csv(io.StringIO(resp.content.decode("utf-8", errors="replace")), low_memory=False)
 
 
 def load_fpl_players(season: str) -> pd.DataFrame:
@@ -61,22 +64,48 @@ def load_fpl_players(season: str) -> pd.DataFrame:
 
 
 def load_fpl_gameweeks(season: str) -> pd.DataFrame:
-    """Load the per-gameweek FPL data (``gws/merged_gw.csv``) from vaastav.
+    """Load the weekly per-player FPL data (``gws/merged_gw.csv``) from vaastav.
 
-    Useful for tracking availability/news *over time* within a season.
+    One row per player per gameweek: ``name``, ``element`` (FPL id), ``GW``,
+    ``kickoff_time``, ``minutes``, ``starts`` + performance stats. NOTE: this does
+    NOT contain ``status``/``news``/``chance_of_playing`` — those are only in the
+    season-end ``players_raw.csv`` snapshot. Use ``minutes`` as a weekly
+    availability proxy; use Transfermarkt for dated injury labels.
     """
     url = f"{VAASTAV_RAW}/{_fpl_season(season)}/gws/merged_gw.csv"
     return _read_csv_url(url)
 
 
-def load_transfermarkt_injuries(path: str) -> pd.DataFrame:
-    """Load a pre-scraped Transfermarkt injuries CSV/parquet from a local path or URL.
+def load_transfermarkt_injuries(path: Optional[str] = None) -> pd.DataFrame:
+    """Load the Transfermarkt injuries table (dated, typed injury spells).
 
-    Download a dataset (e.g. the Kaggle ``davidcariboo/player-scores`` or
-    dcaribou/transfermarkt-datasets ``injuries`` table) yourself and pass its
-    path here. We don't redistribute these — see ``docs/external_data.md`` for
-    links and licences.
+    Defaults to salimt/football-datasets ``player_injuries.csv`` (public, no auth).
+    One row per injury spell: ``player_id`` (Transfermarkt id → club ``tm_id``),
+    ``season_name``, ``injury_reason`` (free text — normalise before use),
+    ``from_date``, ``end_date``, ``days_missed``, ``games_missed``.
+
+    NOTE: dcaribou/transfermarkt-datasets and the Kaggle player-scores dataset do
+    NOT contain injuries. Pass ``path`` to use your own local file/URL instead.
     """
+    if path is None:
+        return _read_csv_url(f"{SALIMT_TM}/player_injuries/player_injuries.csv")
+    if str(path).startswith(("http://", "https://")):
+        return _read_csv_url(path)
+    if str(path).endswith(".parquet"):
+        return pd.read_parquet(path)
+    return pd.read_csv(path)
+
+
+def load_transfermarkt_profiles(path: Optional[str] = None) -> pd.DataFrame:
+    """Load the Transfermarkt player profiles table (id → name/DOB/position/etc.).
+
+    Defaults to salimt/football-datasets ``player_profiles.csv``. Useful for
+    turning the Transfermarkt ``player_id`` into names (to build/verify the
+    identity mapping) and for static features (age from ``date_of_birth``,
+    ``main_position``). Pass ``path`` to use your own local file/URL.
+    """
+    if path is None:
+        return _read_csv_url(f"{SALIMT_TM}/player_profiles/player_profiles.csv")
     if str(path).startswith(("http://", "https://")):
         return _read_csv_url(path)
     if str(path).endswith(".parquet"):

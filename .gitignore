@@ -5,6 +5,12 @@
 pipelines/.env
 pipelines/.env.*
 !pipelines/.env.example
+credentials.csv
+
+# --- Sensitive club data (NDA — never commit; belongs in the bucket) ---
+*injuries*.csv
+*_with_mapping*.csv
+gb1_*.csv
 
 # --- Admin-only ingestion layer (write access) — never pushed to the student repo ---
 pipelines/
