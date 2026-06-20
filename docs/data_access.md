@@ -75,7 +75,7 @@ Rules:
 |---|---|
 | `RuntimeError: Missing Wasabi credentials` | `.env` not created or keys blank. Copy `.env.example` → `.env` and fill it in. |
 | `RuntimeError: Set WASABI_USER` on upload | Add `WASABI_USER=your-name` to `.env` — uploads go to `students/<you>/`. |
-| `AccessDenied` / `InvalidAccessKeyId` on read | Wrong key, or key not yet active. Re-check `.env`; ask supervisor to confirm the key. |
+| `AccessDenied` / `InvalidAccessKeyId` on read | Wrong key, or key not yet active. Double-check `.env`; contact the project maintainer if it persists. |
 | `FileNotFoundError` for a key | Check the exact path with `nffc.list_bucket()` / `nffc.ls(prefix)` — S3 keys are case-sensitive and include spaces (e.g. `Premier League`). |
 | `EndpointConnectionError` | Check `WASABI_REGION` (default `eu-west-1`). |
 | Tracking read is slow / huge | SecondSpectrum games are ~400 MB. Use `nffc.download_file(...)` once, then `nffc_data.ssio.read_tracking_local(...)`. |

@@ -13,14 +13,13 @@ Submodules:
       your personal folder (``upload_parquet``/``upload_file``).
     * :mod:`nffc_data.ssio`      — SecondSpectrum tracking readers.
     * :mod:`nffc_data.statsbomb` — StatsBomb matches/events/lineups loader.
-    * :mod:`nffc_data.external`  — public injury archives + identity-join helpers.
 
 ⚠️ The cohort shares ONE read+write key. Save your work under ``students/<you>/``
 (the ``upload_*`` helpers default there) and never overwrite the shared datasets
-or a teammate's files — there is no undo. See ``docs/access_control_plan.md``.
+or a teammate's files — there is no undo. See ``docs/bucket_usage.md``.
 """
 
-from . import external, ssio, statsbomb, wasabi
+from . import ssio, statsbomb, wasabi
 from .wasabi import (
     download_file,
     get_fs,
@@ -38,7 +37,6 @@ __all__ = [
     "wasabi",
     "ssio",
     "statsbomb",
-    "external",
     "list_bucket",
     "ls",
     "load_parquet",

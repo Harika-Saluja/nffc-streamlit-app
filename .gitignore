@@ -33,3 +33,6 @@ __pycache__/
 
 # --- Editor / agent config (not part of the student deliverable) ---
 .claude/
+
+# --- Project briefs (kept private until finalised) ---
+projects/

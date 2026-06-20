@@ -26,26 +26,21 @@ Sections follow the picked projects in [`../projects/README.md`](../projects/REA
 ### Project 1 — Injury Risk Modelling
 
 Core reading for GPS/workload-based injury forecasting and the anomaly-detection /
-baseline framing in the brief. Several injury-prediction PDFs already exist in the
-club's reading collection (the sibling `NFFC-UoB-Research/Papers` repo — ask the
-supervisor to copy them across): Huth 2025, Freitas 2025, Martins 2024 (review),
-Leckey 2024 (review), Everett 2024, Mateus 2025 (AI-in-sport review).
+baseline framing in the brief.
 
 | Title | Authors | Year | Topic | Notes | Link |
 |---|---|---|---|---|---|
 | Effective injury forecasting in soccer with GPS training data and machine learning | Rossi et al. | 2018 | GPS + ML injury forecasting | Closest analogue to this project — features from training GPS, interpretable ML | [PLoS ONE](https://doi.org/10.1371/journal.pone.0201264) |
 | The training–injury prevention paradox (ACWR / workload) | Gabbett | 2016 | Workload–injury relationship | Foundation for acute:chronic workload features and load-spike reasoning | [BJSM](https://doi.org/10.1136/bjsports-2015-095788) |
 | A preventive model for muscle injuries: a novel approach based on learning algorithms | López-Valenciano et al. | 2018 | ML injury risk classification | Demonstrates (and cautions on) ML injury classification with modest sample sizes | [Med Sci Sports Exerc](https://doi.org/10.1249/MSS.0000000000001535) |
-| Machine learning for injury risk (scoping review) | Leckey et al. | 2024 | Review of ML injury methods | Surveys tree-based / common approaches; good methods orientation | _from club collection_ |
 | _add as you read_ | | | | | |
 
 > **Brief framing:** injury prediction is hard at these sample sizes. The
 > recommended angles are (a) **transfer learning** game tracking → training GPS,
 > and (b) **unsupervised anomaly detection / time-series** on physical output to
 > flag spikes/dips that precede soft-tissue injuries — i.e. model physiological
-> baselines rather than predict injuries directly. Labels come from
-> `injuries/gb1_injuries_with_mapping.*` in the bucket; weekly availability proxy
-> from the FPL archive (`minutes`). See `docs/external_data.md`.
+> baselines rather than predict injuries directly. Injury labels come from
+> `injuries/gb1_injuries_with_mapping.*` in the bucket (see the data dictionary).
 
 ### Project 2 — Career Trajectory / Experience Analysis
 | Title | Authors | Year | Topic | Notes | Link |

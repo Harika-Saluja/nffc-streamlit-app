@@ -44,12 +44,10 @@ SecondSpectrum/{season}/g{optaMatchId}/g{optaMatchId}_SecondSpectrum_Metadata.js
 Catapult/activity/season={YYYY-YYYY}/date={YYYY-MM-DD}/activity_{activity_id}.parquet
 ```
 
-- One parquet per training **activity (session)**, all athletes combined.
+- One parquet per training **session**, all athletes combined.
 - **Columns:** raw 10 Hz sensor fields (GPS/IMU) + `athlete_id`, `athlete_name` (real),
   `activity_id`, `activity_name`, `activity_start`. See `docs/providers/Catapult/`.
-- **Granularity note:** this is **session-level**. The club's internal store uses a
-  *different, intra-session per-period* layout — students should use only this
-  `Catapult/activity/...` data. See `docs/ingestion_pipeline.md`.
+- **Granularity:** session-level — one parquet per training session.
 
 ## 4. Injuries + identity mapping (curated)
 
@@ -64,9 +62,8 @@ injuries/gb1_injuries_with_mapping.parquet
   `second_spectrum_id` (null where no PL tracking match), `team_id`, `team_name`,
   `season` (e.g. `2024/2025`), `reason` (injury type), `from`, `until`,
   `days_missed`, `games_missed`.
-- **Use:** the injury labels for Project 1; join to StatsBomb via `statsbomb_id`,
-  to SecondSpectrum tracking via `second_spectrum_id`, and to public archives via
-  `player_id` (= Transfermarkt `tm_id`) / FPL by name.
+- **Use:** the injury labels for Project 1; join to StatsBomb via `statsbomb_id`
+  and to SecondSpectrum tracking via `second_spectrum_id`.
 
 ```python
 import nffc_data as nffc
@@ -77,17 +74,15 @@ inj = nffc.load_parquet("injuries/gb1_injuries_with_mapping.parquet")
 
 ## Identity & linkage
 
-For the curated injury players, the mapping is **already embedded** in
-`injuries/gb1_injuries_with_mapping.*` (above): `player_id` (Transfermarkt) ↔
-`statsbomb_id` ↔ `second_spectrum_id` ↔ `player_name`. Use those columns to join
-injuries to the club datasets and to public archives:
+The cross-dataset mapping is **already embedded** in
+`injuries/gb1_injuries_with_mapping.*` (above): `player_id` ↔ `statsbomb_id` ↔
+`second_spectrum_id` ↔ `player_name`. Use those columns to join injuries to the
+club datasets:
 
 | id column | links to |
 |---|---|
 | `statsbomb_id` | StatsBomb `player_id` (events/lineups) |
 | `second_spectrum_id` | SecondSpectrum tracking player id (`ssiId`) |
-| `player_id` (Transfermarkt) | public Transfermarkt datasets (`docs/external_data.md`) |
-| `player_name` | FPL archive (by name/team), free-text matching |
+| `player_name` | human-readable label |
 
-For players outside this curated file, build out the mapping the same way (see
-`docs/external_data.md`). Helper: `nffc_data.external.link_via_mapping(...)`.
+Example: `events.merge(inj, left_on="player_id", right_on="statsbomb_id", how="left")`.
