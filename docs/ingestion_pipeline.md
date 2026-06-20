@@ -53,5 +53,6 @@ internal-only.
 
 ## Access keys
 
-`pipelines/setup_readonly_access.py` mints the single shared read-only key the
-students use. See `docs/access_control_plan.md`.
+The cohort shares one IT-issued **read+write** key for `nffcfirstteamstudents`;
+students write their own work under `students/<you>/`. (An optional read-only
+setup is in `docs/access_control_plan.md` / `pipelines/setup_readonly_access.py`.)

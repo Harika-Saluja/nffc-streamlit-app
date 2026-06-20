@@ -1,9 +1,17 @@
-"""Read-only access to the NFFC–UoB project datasets on Wasabi S3.
+"""Access to the NFFC–UoB project datasets on Wasabi S3.
 
 The project data lives in a single Wasabi bucket (default
-``nffcfirstteamstudents``). The access key you were given is **read-only**
-and scoped to that bucket, so nothing in this module can upload, overwrite, or
-delete data — there are deliberately no write helpers here.
+``nffcfirstteamstudents``).
+
+⚠️ **The whole cohort shares ONE read+write key.** That means:
+
+* You can save your own work to the bucket — but writes are real and visible to
+  everyone, and you *can* overwrite or delete shared data or a teammate's files.
+* **Never write outside your personal folder.** Save your work under
+  ``students/<you>/`` using :func:`upload_parquet` / :func:`upload_file` (which
+  default there). Set ``WASABI_USER`` in your ``.env`` to your name/initials.
+* **Never touch the shared source datasets** (``Statsbomb/``, ``SecondSpectrum/``,
+  ``Catapult/``, ``injuries/``) — read them, don't overwrite them.
 
 Typical use::
 
@@ -11,10 +19,11 @@ Typical use::
 
     nffc.list_bucket()                       # see what's in the bucket
     df = nffc.load_parquet("Statsbomb/Premier League/2023-2024/matches.parquet")
+    nffc.upload_parquet(my_features, "features.parquet")   # -> students/<you>/features.parquet
 
 Credentials are read from a ``.env`` file (see ``.env.example``) or the
 environment: ``WASABI_ACCESS_KEY``, ``WASABI_SECRET_KEY``, and optionally
-``WASABI_REGION`` and ``WASABI_BUCKET``.
+``WASABI_REGION``, ``WASABI_BUCKET`` and ``WASABI_USER``.
 """
 
 from __future__ import annotations
@@ -44,7 +53,7 @@ def get_keys() -> tuple[str, str]:
     if not access_key or not secret_key:
         raise RuntimeError(
             "Missing Wasabi credentials. Copy `.env.example` to `.env` and set "
-            "WASABI_ACCESS_KEY and WASABI_SECRET_KEY to the read-only key you were given."
+            "WASABI_ACCESS_KEY and WASABI_SECRET_KEY to the key you were given."
         )
     return access_key, secret_key
 
@@ -69,7 +78,7 @@ def _endpoint_url(region: str) -> str:
 
 @lru_cache(maxsize=1)
 def get_fs() -> s3fs.S3FileSystem:
-    """Return a cached, read-only ``s3fs`` filesystem pointed at Wasabi."""
+    """Return a cached ``s3fs`` filesystem pointed at Wasabi (shared read+write)."""
     access_key, secret_key = get_keys()
     region = get_region()
     return s3fs.S3FileSystem(
@@ -159,3 +168,54 @@ def download_file(key: str, local_path: str, bucket: Optional[str] = None) -> st
     os.makedirs(os.path.dirname(os.path.abspath(local_path)), exist_ok=True)
     fs.get(_full_path(key, bucket), local_path)
     return local_path
+
+
+# --------------------------------------------------------------------------- #
+# Writing your own work back to the bucket
+#
+# ⚠️ Shared bucket, shared key. Writes are real and visible to everyone, and a
+# write to the wrong key WILL overwrite shared data or a teammate's file with no
+# undo. Keep your work under your personal folder (the default below).
+# --------------------------------------------------------------------------- #
+def get_user() -> str:
+    """Your personal-folder name, from ``WASABI_USER`` in ``.env``."""
+    load_dotenv()
+    user = os.getenv("WASABI_USER") or os.getenv("NFFC_USER")
+    if not user:
+        raise RuntimeError(
+            "Set WASABI_USER in your .env (your name or initials). Your work is "
+            "saved under students/<WASABI_USER>/ so you don't overwrite shared "
+            "data or a teammate's files."
+        )
+    return user
+
+
+def personal_key(rel: str, user: Optional[str] = None) -> str:
+    """Build a key inside your personal folder: ``students/<user>/<rel>``."""
+    return f"students/{user or get_user()}/{rel.lstrip('/')}"
+
+
+def upload_parquet(df, rel: str, *, personal: bool = True, user: Optional[str] = None,
+                   bucket: Optional[str] = None) -> str:
+    """Write a DataFrame as parquet to the bucket; returns the key written.
+
+    Defaults to your personal folder (``students/<you>/<rel>``). Set
+    ``personal=False`` to write an arbitrary ``rel`` key — only for agreed shared
+    outputs, and NEVER over the source datasets (``Statsbomb/``, ``SecondSpectrum/``,
+    ``Catapult/``, ``injuries/``).
+    """
+    key = personal_key(rel, user) if personal else rel.lstrip("/")
+    df.to_parquet(f"s3://{_full_path(key, bucket)}", filesystem=get_fs(), index=False)
+    return key
+
+
+def upload_file(local_path: str, rel: str, *, personal: bool = True, user: Optional[str] = None,
+                bucket: Optional[str] = None) -> str:
+    """Upload a local file to the bucket; returns the key written.
+
+    Defaults to your personal folder. See :func:`upload_parquet` for the
+    ``personal=False`` caveat.
+    """
+    key = personal_key(rel, user) if personal else rel.lstrip("/")
+    get_fs().put(local_path, _full_path(key, bucket))
+    return key
