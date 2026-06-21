@@ -51,8 +51,8 @@ def read_tracking(key: str) -> pd.DataFrame:
 def game_files(season: str, game_id: str) -> dict[str, str]:
     """Return the expected ``{data, metadata}`` object keys for a game.
 
-    ``game_id`` may be given with or without the leading ``g`` (e.g. ``2561895``
-    or ``g2561895``).
+    ``game_id`` may be given with or without the leading ``g`` (e.g. ``2444470``
+    or ``g2444470``).
     """
     gid = game_id if str(game_id).startswith("g") else f"g{game_id}"
     base = f"SecondSpectrum/{season}/{gid}"

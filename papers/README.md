@@ -76,7 +76,7 @@ open-data tutorials the student can build on **before** club data access lands.
 > (per-player `xyz` + `speed`, ball position, 25 fps) maps closely onto the
 > Metrica / Friends-of-Tracking public data. Build and validate the pitch-control
 > + xT pipeline on public tracking first, then repoint it at `nffc_data.ssio`
-> when the club data and read-only key are available.
+> once you have your access key.
 
 ### Project 8 — Automated Set-Piece Clustering
 | Title | Authors | Year | Topic | Notes | Link |

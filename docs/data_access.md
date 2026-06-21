@@ -43,11 +43,11 @@ nffc.ls("Statsbomb/Premier League/2023-2024")
 matches = nffc.load_parquet("Statsbomb/Premier League/2023-2024/matches.parquet")
 
 # Read JSON / JSONL
-meta = nffc.read_json("SecondSpectrum/202425/g2561895/g2561895_SecondSpectrum_Metadata.json")
+meta = nffc.read_json("SecondSpectrum/202425/g2444470/g2444470_SecondSpectrum_Metadata.json")
 ```
 
-Higher-level helpers: `nffc_data.statsbomb.StatsBombLoader`, `nffc_data.ssio`,
-`nffc_data.external`. See `examples/` for runnable notebooks.
+Higher-level helpers: `nffc_data.statsbomb.StatsBombLoader` and `nffc_data.ssio`.
+See `examples/` for runnable notebooks.
 
 ## 3. Saving your work (shared bucket)
 
