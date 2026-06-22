@@ -89,6 +89,7 @@ baseline framing in the brief.
 | Neural Discrete Representation Learning (VQ-VAE) | van den Oord, Vinyals, Kavukcuoglu | 2017 | Discrete deep representations | Foundational discrete-latent method — promising, under-applied for tactical "vocabularies" | [arXiv](https://arxiv.org/abs/1711.00937) |
 | Unlocking the potential of big data (tactical review) | Goes et al. | 2021 | Tactical methods review | Method survey | [EJSS](https://doi.org/10.1080/17461391.2020.1747552) |
 | Pass-clustering model (applied, code) | Kolliari (jakeyk11) | — | Applied clustering | 5M+ passes → 65 clusters; reference implementation | [GitHub](https://github.com/jakeyk11/football-data-analytics) |
+| TacticAI: an AI assistant for football tactics | Wang et al. (DeepMind & Liverpool FC) | 2024 | Geometric DL + generative | GNN + generative (VAE-style) model that **retrieves similar corner sequences** and generates alternative setups — strong example of deep generative grouping | [Nat. Commun. / arXiv](https://arxiv.org/abs/2310.10553) |
 | _add as you read_ | | | | | |
 
 > **Techniques — how style analysis has evolved (a steer for this project):**
@@ -168,6 +169,7 @@ open-data tutorials the student can build on **before** club data access lands.
 | Neural Discrete Representation Learning (VQ-VAE) | van den Oord et al. | 2017 | Discrete deep methods | Learn a discrete "vocabulary" of routines — novel angle | [arXiv](https://arxiv.org/abs/1711.00937) |
 | kloppy (tracking ingestion, supports SecondSpectrum) | PySport | — | Tooling | Load/standardise the tracking needed for corners | [kloppy.pysport.org](https://kloppy.pysport.org/) |
 | Pass-clustering model (applied, code) | Kolliari (jakeyk11) | — | Applied clustering | A worked clustering pipeline to adapt | [GitHub](https://github.com/jakeyk11/football-data-analytics) |
+| TacticAI: an AI assistant for football tactics | Wang et al. (DeepMind & Liverpool FC) | 2024 | Geometric DL + generative (corners) | GNN + generative (VAE-style) model that **retrieves similar corners** and suggests setups; SOTA on corner routines — the headline reference for this project | [Nat. Commun. / arXiv](https://arxiv.org/abs/2310.10553) |
 | _add as you read_ | | | | | |
 
 > **Note:** the general clustering/representation methods above (NMF, mixture
