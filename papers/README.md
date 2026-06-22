@@ -126,8 +126,8 @@ baseline framing in the brief.
 > test industry assumptions (adaptation tax, contract length, window timing) in
 > the spirit of *Mythbusting Set-Pieces*, using the bias literature above to frame
 > hypotheses; or (b) a **methods pivot** — if the domain framing proves hard,
-> focus on *improving an action-valuation model* (VAEP / xT / EPV / SoccerMap) as
-> the recruitment signal. Both are legitimate routes.
+> you could focus on *improving an action-valuation model* (VAEP / xT / EPV / SoccerMap) as
+> the recruitment signal. 
 
 ### Project 7 — Pitch Control & Expected Threat Modelling
 
@@ -149,12 +149,6 @@ open-data tutorials the student can build on **before** club data access lands.
 | socceraction (xT implementation) | ML-KULeuven | — | Tooling | Ready-made xT/VAEP to build the value layer | [GitHub](https://github.com/ML-KULeuven/socceraction) |
 | Unlocking the potential of big data (tactical review) | Goes et al. | 2021 | Spatial/tracking review | Context for tracking-based value models | [EJSS](https://doi.org/10.1080/17461391.2020.1747552) |
 | _add as you read_ | | | | | |
-
-> **Tip for the spatial-control student:** the SecondSpectrum frame format
-> (per-player `xyz` + `speed`, ball position, 25 fps) maps closely onto the
-> Metrica / Friends-of-Tracking public data. Build and validate the pitch-control
-> + xT pipeline on public tracking first, then repoint it at `nffc_data.ssio`
-> once you have your access key.
 
 ### Project 8 — Automated Set-Piece Clustering
 
