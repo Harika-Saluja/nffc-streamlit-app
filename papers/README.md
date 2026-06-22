@@ -2,14 +2,6 @@
 
 Shared sports-analytics reading for the projects.
 
-**Filing convention:** lowercase, hyphenated — `author-year-keywords.pdf`
-(e.g. `spearman-2018-pitch-control.pdf`).
-
-## How to add a paper
-
-1. Save the PDF here with the naming convention above (or just link it if it's a web resource).
-2. Add a row under the matching project (or **General**) with a one-line "why it's relevant".
-
 ## Collection hubs
 
 Curated, regularly-updated roundups of the football-analytics field — great for
