@@ -1,7 +1,6 @@
 # Papers & references
 
-Shared sports-analytics reading for the projects. Drop PDFs in this folder and
-add a row to the relevant table below.
+Shared sports-analytics reading for the projects.
 
 **Filing convention:** lowercase, hyphenated — `author-year-keywords.pdf`
 (e.g. `spearman-2018-pitch-control.pdf`).
