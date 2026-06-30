@@ -66,7 +66,7 @@ else:
         st.write(f"**Jersey Number:** {bio['jersey_number'].iloc[0]}")
         #st.write(f"**Formation:** {bio['formations'].iloc[0]}")
 
-st.markdown("---")
+#st.markdown("---")
 #st.caption("Step 1: Player bio with sidebar selector")
 
 # ---------------------------------------------------------
@@ -81,7 +81,7 @@ st.empty()  # clean placeholder space
 # VERDICT SUMMARY (4 hypotheses)
 # ---------------------------------------------------------
 st.markdown("---")
-st.header("🧠 Verdict Summary")
+st.header("Verdict Summary")
 
 st.write("### Hypothesis 1: Adaptation Tax")
 st.write("*(Result will be added here)*")
@@ -106,5 +106,5 @@ st.empty()
 # ---------------------------------------------------------
 # Footer
 # ---------------------------------------------------------
-st.markdown("---")
-st.caption("Step 2: Added Performance Trend, Verdict Summary, and Perfect Signing Score placeholders.")
+#st.markdown("---")
+#st.caption("Step 2: Added Performance Trend, Verdict Summary, and Perfect Signing Score placeholders.")
