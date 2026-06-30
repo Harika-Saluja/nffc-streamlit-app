@@ -86,7 +86,7 @@ st.header("🧠 Verdict Summary")
 st.write("### Hypothesis 1: Adaptation Tax")
 st.write("*(Result will be added here)*")
 
-st.write("### Transfer Timing")
+st.write("### Hypothesis 2: Transfer Timing")
 st.write("*(Result will be added here)*")
 
 st.write("### Hypothesis 3: Age Optimization")
