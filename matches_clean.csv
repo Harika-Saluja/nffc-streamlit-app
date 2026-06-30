@@ -1,0 +1,381 @@
+match_id,match_date,match_week,home_team,away_team,home_score,away_score
+3892779,2023-08-26,3,Brighton & Hove Albion,West Ham United,1,3
+3892763,2023-08-13,1,Brentford,Tottenham Hotspur,2,2
+3892814,2023-09-24,6,Sheffield United,Newcastle United,0,8
+3892805,2023-09-24,6,Arsenal,Tottenham Hotspur,2,2
+3892953,2023-12-31,20,Tottenham Hotspur,AFC Bournemouth,3,1
+3892864,2023-11-06,11,Tottenham Hotspur,Chelsea,1,4
+3892961,2024-01-12,21,Burnley,Luton Town,1,1
+3892868,2023-11-11,12,Manchester United,Luton Town,1,0
+3892978,2024-02-04,23,Arsenal,Liverpool,3,1
+3892889,2023-12-02,14,Arsenal,Wolverhampton Wanderers,2,1
+3892982,2024-02-03,23,Everton,Tottenham Hotspur,2,2
+3892995,2024-02-18,25,Sheffield United,Brighton & Hove Albion,0,5
+3892767,2023-08-21,2,Crystal Palace,Arsenal,0,1
+3893042,2024-03-17,29,West Ham United,Aston Villa,1,1
+3892790,2023-09-03,4,Crystal Palace,Wolverhampton Wanderers,3,2
+3893050,2024-03-30,30,AFC Bournemouth,Everton,2,1
+3892816,2023-09-30,7,Aston Villa,Brighton & Hove Albion,6,1
+3893116,2024-05-11,37,Tottenham Hotspur,Burnley,2,1
+3892827,2023-10-07,8,Burnley,Chelsea,1,4
+3893131,2024-05-19,38,Brighton & Hove Albion,Manchester United,0,2
+3892880,2023-11-26,13,Tottenham Hotspur,Aston Villa,1,2
+3892813,2023-09-23,6,Manchester City,Nottingham Forest,2,0
+3892908,2023-12-09,16,Crystal Palace,Liverpool,1,2
+3892817,2023-09-30,7,Everton,Luton Town,1,2
+3893009,2024-02-24,26,Brighton & Hove Albion,Everton,1,1
+3892839,2023-10-21,9,Liverpool,Everton,2,0
+3893036,2024-04-23,29,Arsenal,Chelsea,5,0
+3892862,2023-11-05,11,Nottingham Forest,Aston Villa,2,0
+3893038,2024-04-24,29,Crystal Palace,Newcastle United,2,0
+3892879,2023-11-25,13,Sheffield United,AFC Bournemouth,1,3
+3893067,2024-04-06,32,Everton,Burnley,1,0
+3892912,2023-12-09,16,Manchester United,AFC Bournemouth,0,3
+3893112,2024-05-04,36,Burnley,Newcastle United,1,4
+3892980,2024-02-03,23,Brighton & Hove Albion,Crystal Palace,4,1
+3892869,2023-11-11,12,Wolverhampton Wanderers,Tottenham Hotspur,2,1
+3893040,2024-03-16,29,Fulham,Tottenham Hotspur,3,0
+3892878,2023-11-25,13,Nottingham Forest,Brighton & Hove Albion,2,3
+3893046,2024-03-30,30,Aston Villa,Wolverhampton Wanderers,2,0
+3892929,2023-12-23,18,Fulham,Burnley,0,2
+3893072,2024-04-06,32,Wolverhampton Wanderers,West Ham United,1,2
+3892963,2024-01-14,21,Everton,Aston Villa,0,0
+3892758,2023-08-12,1,Everton,Fulham,0,1
+3892976,2024-02-03,23,Sheffield United,Aston Villa,0,5
+3892768,2023-08-19,2,Fulham,Brentford,0,3
+3893010,2024-05-02,26,Chelsea,Tottenham Hotspur,2,0
+3892776,2023-08-26,3,AFC Bournemouth,Tottenham Hotspur,0,2
+3893027,2024-03-11,28,Chelsea,Newcastle United,3,2
+3892781,2023-08-26,3,Everton,Wolverhampton Wanderers,0,1
+3893049,2024-03-31,30,Manchester City,Arsenal,0,0
+3892843,2023-10-21,9,Sheffield United,Manchester United,1,2
+3893057,2024-04-03,31,Brentford,Brighton & Hove Albion,0,0
+3892863,2023-11-04,11,Sheffield United,Wolverhampton Wanderers,2,1
+3893066,2024-04-06,32,Crystal Palace,Manchester City,2,4
+3892884,2023-11-27,13,Fulham,Wolverhampton Wanderers,3,2
+3892783,2023-08-27,3,Newcastle United,Liverpool,1,2
+3892910,2023-12-10,16,Fulham,West Ham United,5,0
+3892792,2023-09-01,4,Luton Town,West Ham United,1,2
+3892960,2024-01-22,21,Brighton & Hove Albion,Wolverhampton Wanderers,0,0
+3892959,2024-01-20,21,Brentford,Nottingham Forest,3,2
+3893063,2024-04-03,31,Manchester City,Aston Villa,4,1
+3893031,2024-03-09,28,AFC Bournemouth,Sheffield United,2,2
+3893100,2024-04-28,35,Nottingham Forest,Manchester City,0,2
+3893037,2024-04-25,29,Brighton & Hove Albion,Manchester City,0,4
+3893105,2024-05-05,36,Liverpool,Tottenham Hotspur,4,2
+3893068,2024-04-06,32,Fulham,Newcastle United,0,1
+3893119,2024-05-12,37,Manchester United,Arsenal,0,1
+3893069,2024-04-06,32,Luton Town,AFC Bournemouth,2,1
+3893130,2024-05-19,38,Burnley,Nottingham Forest,1,2
+3893096,2024-04-27,35,Everton,Brentford,1,0
+3892770,2023-10-03,2,Luton Town,Burnley,1,2
+3893118,2024-05-11,37,Wolverhampton Wanderers,Crystal Palace,1,3
+3892787,2023-09-02,4,Brighton & Hove Albion,Newcastle United,3,1
+3892764,2023-08-14,1,Manchester United,Wolverhampton Wanderers,1,0
+3892821,2023-10-01,7,Nottingham Forest,Brentford,1,1
+3892799,2023-09-16,5,Manchester United,Brighton & Hove Albion,1,3
+3892828,2023-10-07,8,Crystal Palace,Nottingham Forest,0,0
+3892810,2023-09-23,6,Crystal Palace,Fulham,0,0
+3892854,2023-10-29,10,Liverpool,Nottingham Forest,3,0
+3892811,2023-09-24,6,Liverpool,West Ham United,3,1
+3892853,2023-10-29,10,Manchester United,Manchester City,0,3
+3892834,2023-10-08,8,Wolverhampton Wanderers,Aston Villa,1,1
+3892859,2023-11-05,11,Luton Town,Liverpool,1,1
+3892846,2023-10-28,10,Arsenal,Sheffield United,5,0
+3892877,2023-11-25,13,Newcastle United,Chelsea,4,1
+3892888,2023-12-02,14,Brentford,Luton Town,3,1
+3892903,2023-12-06,15,Sheffield United,Liverpool,0,2
+3892891,2023-12-02,14,Burnley,Sheffield United,5,0
+3892914,2023-12-09,16,Wolverhampton Wanderers,Nottingham Forest,1,1
+3892907,2023-12-09,16,Brighton & Hove Albion,Burnley,1,1
+3892990,2024-02-10,24,Luton Town,Sheffield United,1,3
+3892940,2023-12-28,19,Brighton & Hove Albion,Tottenham Hotspur,4,2
+3893045,2024-03-31,30,Liverpool,Brighton & Hove Albion,2,1
+3892977,2024-02-04,23,AFC Bournemouth,Nottingham Forest,1,1
+3893133,2024-05-19,38,Arsenal,Everton,2,1
+3892987,2024-02-12,24,Crystal Palace,Chelsea,1,3
+3892791,2023-09-03,4,Liverpool,Aston Villa,3,0
+3893008,2024-02-24,26,Aston Villa,Nottingham Forest,4,2
+3892842,2023-10-21,9,Nottingham Forest,Luton Town,2,2
+3893021,2024-03-02,27,Everton,West Ham United,1,3
+3892897,2023-12-05,15,Wolverhampton Wanderers,Burnley,1,0
+3893053,2024-03-30,30,Newcastle United,West Ham United,4,3
+3892922,2023-12-17,17,Arsenal,Brighton & Hove Albion,2,0
+3892793,2023-09-02,4,Manchester City,Fulham,5,1
+3892933,2023-12-23,18,Nottingham Forest,AFC Bournemouth,2,3
+3892856,2023-11-04,11,Brentford,West Ham United,3,2
+3892988,2024-02-10,24,Fulham,AFC Bournemouth,3,1
+3892955,2024-01-13,21,Newcastle United,Manchester City,2,3
+3892998,2024-02-17,25,Manchester City,Chelsea,1,1
+3893000,2024-02-17,25,Fulham,Aston Villa,1,2
+3893032,2024-03-10,28,West Ham United,Burnley,2,2
+3893025,2024-03-10,28,Aston Villa,Tottenham Hotspur,0,4
+3893064,2024-04-04,31,Chelsea,Manchester United,4,3
+3893051,2024-03-30,30,Tottenham Hotspur,Luton Town,2,1
+3893098,2024-04-27,35,Manchester United,Burnley,1,1
+3893055,2024-04-02,31,AFC Bournemouth,Crystal Palace,1,0
+3893101,2024-04-28,35,Tottenham Hotspur,Arsenal,2,3
+3893076,2024-04-13,33,AFC Bournemouth,Manchester United,2,2
+3892766,2023-08-20,2,Aston Villa,Everton,4,0
+3893127,2024-05-19,38,Liverpool,Wolverhampton Wanderers,2,0
+3892794,2023-09-02,4,Sheffield United,Everton,2,2
+3892761,2023-08-12,1,Arsenal,Nottingham Forest,2,1
+3892815,2023-09-30,7,AFC Bournemouth,Arsenal,0,4
+3892796,2023-09-16,5,Aston Villa,Crystal Palace,3,1
+3892825,2023-10-08,8,Arsenal,Manchester City,1,0
+3892802,2023-09-16,5,Tottenham Hotspur,Sheffield United,2,1
+3892872,2023-11-12,12,Chelsea,Manchester City,4,4
+3892808,2023-09-23,6,Burnley,Manchester United,0,1
+3892952,2023-12-30,20,Nottingham Forest,Manchester United,2,1
+3892836,2023-10-22,9,Aston Villa,West Ham United,4,1
+3892957,2024-01-21,21,AFC Bournemouth,Liverpool,0,4
+3892844,2023-10-23,9,Tottenham Hotspur,Fulham,2,0
+3893041,2024-03-16,29,Luton Town,Nottingham Forest,1,1
+3892860,2023-11-04,11,Manchester City,AFC Bournemouth,6,1
+3893048,2024-03-30,30,Chelsea,Burnley,2,2
+3892893,2023-12-03,14,Liverpool,Fulham,4,3
+3893054,2024-03-30,30,Sheffield United,Fulham,3,3
+3892928,2023-12-21,18,Crystal Palace,Brighton & Hove Albion,1,1
+3892801,2023-09-18,5,Nottingham Forest,Burnley,1,1
+3892947,2023-12-30,20,Crystal Palace,Brentford,3,1
+3892818,2023-10-02,7,Fulham,Chelsea,0,2
+3892954,2023-12-30,20,Wolverhampton Wanderers,Everton,3,0
+3892824,2023-09-30,7,Wolverhampton Wanderers,Manchester City,2,1
+3892975,2024-02-03,23,Newcastle United,Luton Town,4,4
+3892848,2023-10-28,10,Wolverhampton Wanderers,Newcastle United,2,2
+3893043,2024-04-24,29,Wolverhampton Wanderers,AFC Bournemouth,0,1
+3892865,2023-11-11,12,AFC Bournemouth,Newcastle United,2,0
+3893086,2024-05-15,34,Brighton & Hove Albion,Chelsea,1,2
+3892938,2023-12-28,19,Arsenal,West Ham United,0,2
+3893099,2024-04-27,35,Newcastle United,Sheffield United,5,1
+3892967,2024-01-30,22,Fulham,Everton,0,0
+3924808,2024-03-13,17,AFC Bournemouth,Luton Town,4,3
+3892983,2024-02-04,23,Chelsea,Wolverhampton Wanderers,2,4
+3892782,2023-08-26,3,Manchester United,Nottingham Forest,3,2
+3892994,2024-02-11,24,West Ham United,Arsenal,0,6
+3892795,2023-09-17,5,AFC Bournemouth,Chelsea,0,0
+3892997,2024-02-17,25,Newcastle United,AFC Bournemouth,2,2
+3892822,2023-09-30,7,Tottenham Hotspur,Liverpool,2,1
+3892996,2024-02-17,25,Nottingham Forest,West Ham United,2,0
+3892826,2023-10-08,8,Brighton & Hove Albion,Liverpool,2,2
+3893012,2024-02-24,26,Manchester United,Fulham,1,2
+3892866,2023-11-11,12,Arsenal,Burnley,3,1
+3893019,2024-03-04,27,Sheffield United,Arsenal,0,6
+3892894,2023-12-03,14,Manchester City,Tottenham Hotspur,3,3
+3893035,2024-03-16,29,Burnley,Brentford,2,1
+3892886,2023-12-02,14,Nottingham Forest,Everton,0,1
+3893079,2024-04-13,33,Burnley,Brighton & Hove Albion,1,1
+3892900,2023-12-07,15,Everton,Newcastle United,3,0
+3892757,2023-08-12,1,Sheffield United,Crystal Palace,0,1
+3892934,2023-12-23,18,Tottenham Hotspur,Everton,2,1
+3892780,2023-08-27,3,Burnley,Aston Villa,1,3
+3892972,2024-02-01,22,Wolverhampton Wanderers,Manchester United,3,4
+3892837,2023-10-21,9,Brentford,Burnley,3,0
+3893065,2024-04-06,32,Brighton & Hove Albion,Arsenal,0,3
+3892845,2023-10-28,10,AFC Bournemouth,Burnley,2,1
+3893117,2024-05-11,37,West Ham United,Luton Town,3,1
+3892852,2023-10-29,10,West Ham United,Everton,0,1
+3892756,2023-08-12,1,Newcastle United,Aston Villa,5,1
+3892874,2023-11-12,12,Liverpool,Brentford,3,0
+3892771,2023-08-19,2,Manchester City,Newcastle United,1,0
+3892881,2023-11-25,13,Brentford,Arsenal,0,1
+3892789,2023-09-02,4,Chelsea,Nottingham Forest,0,1
+3892883,2023-11-26,13,Everton,Manchester United,0,3
+3892809,2023-09-24,6,Chelsea,Aston Villa,0,1
+3892904,2023-12-06,15,Manchester United,Chelsea,2,1
+3892851,2023-10-29,10,Brighton & Hove Albion,Fulham,1,1
+3892919,2023-12-16,17,Chelsea,Sheffield United,2,0
+3892850,2023-10-27,10,Crystal Palace,Tottenham Hotspur,1,2
+3892916,2023-12-15,17,Nottingham Forest,Tottenham Hotspur,0,2
+3892857,2023-11-04,11,Burnley,Crystal Palace,0,2
+3892930,2023-12-23,18,Liverpool,Arsenal,1,1
+3892870,2023-11-12,12,West Ham United,Nottingham Forest,3,2
+3892931,2023-12-23,18,Luton Town,Newcastle United,1,0
+3892887,2023-12-03,14,West Ham United,Crystal Palace,1,1
+3892968,2024-01-30,22,Nottingham Forest,Arsenal,1,2
+3892902,2023-12-05,15,Luton Town,Arsenal,3,4
+3893001,2024-02-19,25,Everton,Crystal Palace,1,1
+3892895,2023-12-07,15,Tottenham Hotspur,West Ham United,1,2
+3893007,2024-02-24,26,Arsenal,Newcastle United,4,1
+3892915,2023-12-16,17,Newcastle United,Fulham,3,0
+3893011,2024-02-21,26,Liverpool,Luton Town,4,1
+3892958,2024-01-20,21,Arsenal,Crystal Palace,5,0
+3893071,2024-04-07,32,Tottenham Hotspur,Nottingham Forest,3,1
+3892981,2024-02-03,23,Burnley,Fulham,2,2
+3893090,2024-05-14,34,Tottenham Hotspur,Manchester City,0,2
+3893002,2024-02-17,25,Burnley,Arsenal,0,5
+3893095,2024-04-27,35,Aston Villa,Chelsea,2,2
+3893094,2024-04-21,34,Aston Villa,AFC Bournemouth,3,1
+3893134,2024-05-19,38,Sheffield United,Tottenham Hotspur,0,3
+3893126,2024-05-19,38,Luton Town,Fulham,2,4
+3892760,2023-08-12,1,AFC Bournemouth,West Ham United,1,1
+3892840,2023-10-21,9,Manchester City,Brighton & Hove Albion,2,1
+3892855,2023-11-04,11,Everton,Brighton & Hove Albion,1,1
+3892849,2023-10-28,10,Chelsea,Brentford,0,2
+3892858,2023-11-04,11,Fulham,Manchester United,0,1
+3892867,2023-11-12,12,Aston Villa,Fulham,3,1
+3892926,2023-12-24,18,Wolverhampton Wanderers,Chelsea,2,1
+3892882,2023-11-25,13,Burnley,West Ham United,1,2
+3892942,2023-12-27,19,Chelsea,Crystal Palace,2,1
+3892944,2023-12-26,19,Manchester United,Aston Villa,3,2
+3892936,2023-12-26,19,Sheffield United,Luton Town,2,3
+3893028,2024-03-09,28,Crystal Palace,Luton Town,1,1
+3892966,2024-01-30,22,Luton Town,Brighton & Hove Albion,4,0
+3893082,2024-04-13,33,Manchester City,Luton Town,5,1
+3893018,2024-03-02,27,Nottingham Forest,Liverpool,0,1
+3893088,2024-04-21,34,Fulham,Liverpool,1,3
+3893078,2024-04-13,33,Brentford,Sheffield United,2,0
+3892762,2023-08-13,1,Chelsea,Liverpool,1,1
+3893083,2024-04-13,33,Newcastle United,Tottenham Hotspur,4,0
+3892786,2023-09-02,4,Brentford,AFC Bournemouth,2,2
+3893075,2024-04-14,33,West Ham United,Fulham,0,2
+3892830,2023-10-07,8,Fulham,Sheffield United,3,1
+3893093,2024-04-20,34,Luton Town,Brentford,1,5
+3892832,2023-10-07,8,Manchester United,Brentford,2,1
+3893103,2024-04-27,35,Wolverhampton Wanderers,Luton Town,2,1
+3892909,2023-12-10,16,Everton,Chelsea,2,0
+3893113,2024-05-05,36,Chelsea,West Ham United,5,0
+3892924,2023-12-17,17,West Ham United,Wolverhampton Wanderers,3,0
+3893115,2024-05-11,37,Newcastle United,Brighton & Hove Albion,1,1
+3892925,2023-12-23,18,West Ham United,Manchester United,2,0
+3893125,2024-05-19,38,Manchester City,West Ham United,3,1
+3892974,2024-01-31,22,Manchester City,Burnley,3,1
+3892896,2023-12-06,15,Crystal Palace,AFC Bournemouth,0,2
+3892986,2024-02-11,24,Aston Villa,Manchester United,1,2
+3892962,2024-01-13,21,Chelsea,Fulham,1,0
+3893017,2024-03-02,27,Newcastle United,Wolverhampton Wanderers,3,0
+3892989,2024-02-10,24,Liverpool,Burnley,3,1
+3893062,2024-04-04,31,Liverpool,Sheffield United,3,1
+3893060,2024-04-02,31,West Ham United,Tottenham Hotspur,1,1
+3893073,2024-04-07,32,Manchester United,Liverpool,2,2
+3893080,2024-04-15,33,Chelsea,Everton,6,0
+3893106,2024-05-03,36,Luton Town,Everton,1,1
+3893087,2024-04-21,34,Crystal Palace,West Ham United,5,2
+3892861,2023-11-04,11,Newcastle United,Arsenal,1,0
+3892759,2023-08-12,1,Brighton & Hove Albion,Luton Town,4,1
+3892873,2023-11-11,12,Crystal Palace,Everton,2,3
+3892806,2023-09-23,6,Brentford,Everton,1,3
+3892899,2023-12-06,15,Brighton & Hove Albion,Brentford,2,1
+3892901,2023-12-06,15,Fulham,Nottingham Forest,5,0
+3892906,2023-12-09,16,Aston Villa,Arsenal,1,0
+3892911,2023-12-10,16,Luton Town,Manchester City,1,2
+3892918,2023-12-17,17,Liverpool,Manchester United,0,0
+3892921,2023-12-17,17,Brentford,Aston Villa,1,2
+3892946,2023-12-30,20,Aston Villa,Burnley,3,2
+3892985,2024-02-10,24,Wolverhampton Wanderers,Brentford,0,2
+3892991,2024-02-10,24,Manchester City,Everton,2,0
+3893023,2024-03-02,27,Fulham,Brighton & Hove Albion,3,0
+3893016,2024-03-03,27,Manchester City,Manchester United,3,1
+3893061,2024-04-02,31,Newcastle United,Everton,1,1
+3893044,2024-04-24,29,Manchester United,Sheffield United,4,2
+3893089,2024-04-20,34,Sheffield United,Burnley,1,4
+3893108,2024-05-04,36,Sheffield United,Nottingham Forest,1,3
+3893104,2024-04-28,35,AFC Bournemouth,Brighton & Hove Albion,3,0
+3892772,2023-08-18,2,Nottingham Forest,Sheffield United,2,1
+3893102,2024-04-27,35,West Ham United,Liverpool,2,2
+3892803,2023-09-16,5,West Ham United,Manchester City,1,3
+3893107,2024-05-04,36,Manchester City,Wolverhampton Wanderers,5,1
+3892819,2023-09-30,7,Manchester United,Crystal Palace,0,1
+3892774,2023-08-20,2,West Ham United,Chelsea,3,1
+3892871,2023-11-12,12,Brighton & Hove Albion,Sheffield United,1,1
+3892784,2023-08-27,3,Sheffield United,Manchester City,1,2
+3892885,2023-12-02,14,Newcastle United,Manchester United,1,0
+3892829,2023-10-07,8,Everton,AFC Bournemouth,3,0
+3892973,2024-01-31,22,Liverpool,Chelsea,4,1
+3892920,2023-12-16,17,Burnley,Everton,0,2
+3893004,2024-02-17,25,Tottenham Hotspur,Wolverhampton Wanderers,1,2
+3893006,2024-02-24,26,Crystal Palace,Burnley,3,0
+3893052,2024-03-30,30,Nottingham Forest,Crystal Palace,1,1
+3893013,2024-02-26,26,West Ham United,Brentford,4,2
+3893058,2024-04-02,31,Burnley,Wolverhampton Wanderers,1,1
+3893059,2024-04-02,31,Nottingham Forest,Fulham,3,1
+3893085,2024-04-21,34,Everton,Nottingham Forest,2,0
+3892769,2023-08-19,2,Liverpool,AFC Bournemouth,3,1
+3892755,2023-08-11,1,Burnley,Manchester City,0,3
+3892778,2023-08-26,3,Brentford,Crystal Palace,1,1
+3892798,2023-09-16,5,Fulham,Luton Town,1,0
+3892812,2023-09-23,6,Luton Town,Wolverhampton Wanderers,1,1
+3892820,2023-09-30,7,Newcastle United,Burnley,2,0
+3892823,2023-09-30,7,West Ham United,Sheffield United,2,0
+3892831,2023-10-07,8,Luton Town,Tottenham Hotspur,0,1
+3892833,2023-10-08,8,West Ham United,Newcastle United,2,2
+3892950,2023-12-30,20,Luton Town,Chelsea,2,3
+3892847,2023-10-29,10,Aston Villa,Luton Town,3,1
+3892965,2024-01-30,22,Crystal Palace,Sheffield United,3,2
+3892875,2023-11-25,13,Luton Town,Crystal Palace,2,1
+3893014,2024-02-25,26,Wolverhampton Wanderers,Sheffield United,1,0
+3892890,2023-12-03,14,AFC Bournemouth,Aston Villa,2,2
+3893024,2024-03-02,27,Luton Town,Aston Villa,2,3
+3892892,2023-12-03,14,Chelsea,Brighton & Hove Albion,3,2
+3893030,2024-03-09,28,Manchester United,Everton,2,0
+3892898,2023-12-06,15,Aston Villa,Manchester City,1,0
+3893091,2024-04-20,34,Wolverhampton Wanderers,Arsenal,0,2
+3892939,2023-12-27,19,Brentford,Wolverhampton Wanderers,1,4
+3893114,2024-05-06,36,Crystal Palace,Manchester United,4,0
+3892948,2023-12-31,20,Fulham,Arsenal,2,1
+3892927,2023-12-22,18,Aston Villa,Sheffield United,1,1
+3892945,2024-01-02,20,West Ham United,Brighton & Hove Albion,0,0
+3892932,2024-02-20,18,Manchester City,Brentford,1,0
+3893022,2024-03-02,27,Brentford,Chelsea,2,2
+3892956,2024-01-21,21,Sheffield United,West Ham United,2,2
+3893020,2024-03-02,27,Tottenham Hotspur,Crystal Palace,3,1
+3892970,2024-01-31,22,Tottenham Hotspur,Brentford,3,2
+3893111,2024-05-05,36,Brighton & Hove Albion,Aston Villa,1,0
+3892979,2024-02-05,23,Brentford,Manchester City,1,3
+3893123,2024-05-11,37,AFC Bournemouth,Brentford,1,2
+3893003,2024-02-17,25,Brentford,Liverpool,1,4
+3893129,2024-05-19,38,Chelsea,AFC Bournemouth,2,1
+3892999,2024-02-18,25,Luton Town,Manchester United,1,2
+3892804,2023-09-16,5,Wolverhampton Wanderers,Liverpool,1,3
+3893026,2024-03-10,28,Brighton & Hove Albion,Nottingham Forest,1,0
+3892935,2023-12-26,19,Newcastle United,Nottingham Forest,1,3
+3893047,2024-03-30,30,Brentford,Manchester United,1,1
+3892971,2024-02-01,22,West Ham United,AFC Bournemouth,1,1
+3893056,2024-04-03,31,Arsenal,Luton Town,2,0
+3892984,2024-02-04,23,Manchester United,West Ham United,3,0
+3893109,2024-05-04,36,Arsenal,AFC Bournemouth,3,0
+3892992,2024-02-10,24,Nottingham Forest,Newcastle United,2,3
+3892777,2023-08-26,3,Arsenal,Fulham,2,2
+3893015,2024-03-03,27,Burnley,AFC Bournemouth,0,2
+3892797,2023-09-17,5,Everton,Arsenal,0,1
+3893039,2024-04-24,29,Everton,Liverpool,2,0
+3892835,2023-10-21,9,AFC Bournemouth,Wolverhampton Wanderers,1,2
+3893122,2024-05-13,37,Aston Villa,Liverpool,3,3
+3892838,2023-10-21,9,Chelsea,Arsenal,2,2
+3893120,2024-05-11,37,Fulham,Manchester City,0,4
+3892841,2023-10-21,9,Newcastle United,Crystal Palace,4,0
+3893132,2024-05-19,38,Brentford,Newcastle United,2,4
+3892937,2023-12-26,19,AFC Bournemouth,Fulham,3,0
+3892773,2023-08-19,2,Tottenham Hotspur,Manchester United,2,0
+3892964,2024-01-14,21,Manchester United,Tottenham Hotspur,2,2
+3892775,2023-08-25,3,Chelsea,Luton Town,3,0
+3893005,2024-02-24,26,AFC Bournemouth,Manchester City,0,1
+3892785,2023-09-03,4,Arsenal,Manchester United,3,1
+3893033,2024-03-09,28,Wolverhampton Wanderers,Fulham,2,1
+3892800,2023-09-16,5,Newcastle United,Brentford,1,0
+3893124,2024-05-11,37,Nottingham Forest,Chelsea,2,3
+3892941,2023-12-26,19,Burnley,Liverpool,0,2
+3893128,2024-05-19,38,Crystal Palace,Aston Villa,5,0
+3892943,2023-12-27,19,Everton,Manchester City,1,3
+3892765,2023-08-19,2,Wolverhampton Wanderers,Brighton & Hove Albion,1,4
+3892949,2024-01-01,20,Liverpool,Newcastle United,4,2
+3892788,2023-09-02,4,Burnley,Tottenham Hotspur,2,5
+3892951,2023-12-30,20,Manchester City,Sheffield United,2,0
+3892807,2023-09-24,6,Brighton & Hove Albion,AFC Bournemouth,3,1
+3892969,2024-01-30,22,Aston Villa,Newcastle United,1,3
+3892876,2023-11-25,13,Manchester City,Liverpool,1,1
+3892993,2024-02-10,24,Tottenham Hotspur,Brighton & Hove Albion,2,1
+3892905,2023-12-09,16,Sheffield United,Brentford,1,0
+3893029,2024-03-10,28,Liverpool,Manchester City,1,1
+3892913,2023-12-10,16,Tottenham Hotspur,Newcastle United,4,1
+3893074,2024-04-06,32,Aston Villa,Brentford,3,3
+3892917,2023-12-16,17,Manchester City,Crystal Palace,2,2
+3893070,2024-04-07,32,Sheffield United,Chelsea,2,2
+3893034,2024-03-09,28,Arsenal,Brentford,2,1
+3893084,2024-04-13,33,Nottingham Forest,Wolverhampton Wanderers,2,2
+3893077,2024-04-14,33,Arsenal,Aston Villa,0,2
+3893097,2024-04-27,35,Fulham,Crystal Palace,1,1
+3893081,2024-04-14,33,Liverpool,Crystal Palace,0,1
+3893110,2024-05-04,36,Brentford,Fulham,0,0
+3893092,2024-05-15,34,Manchester United,Newcastle United,3,2
+3893121,2024-05-11,37,Everton,Sheffield United,1,0

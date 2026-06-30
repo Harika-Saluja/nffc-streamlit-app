@@ -1,0 +1,501 @@
+match_id,player_id,team,minute,pass_outcome,duel_outcome,shot_statsbomb_xg,interception_outcome,carry_end_location,position,match_date,competition,season,match_week
+3892846,8966.0,Arsenal,37,,,,,,Right Center Midfield,2023-10-28,England - Premier League,2023/2024,10
+3892973,27886.0,Liverpool,69,,,,,,Center Defensive Midfield,2024-01-31,England - Premier League,2023/2024,22
+3893092,4031.0,Newcastle United,50,,,,,,Right Center Midfield,2024-05-15,England - Premier League,2023/2024,34
+3892804,3531.0,Liverpool,89,,,,,,Right Wing,2023-09-16,England - Premier League,2023/2024,5
+3893006,42298.0,Burnley,29,,,,,,Goalkeeper,2024-02-24,England - Premier League,2023/2024,26
+3892774,50497.0,Chelsea,46,,,,,[71.  36.2],Center Forward,2023-08-20,England - Premier League,2023/2024,2
+3892941,27158.0,Liverpool,72,,,,,[101.8   6.5],Left Wing,2023-12-26,England - Premier League,2023/2024,19
+3893012,49049.0,Fulham,46,,,,,,Center Forward,2024-02-24,England - Premier League,2023/2024,26
+3893067,16234.0,Burnley,21,,,,,,Goalkeeper,2024-04-06,England - Premier League,2023/2024,32
+3892946,30976.0,Aston Villa,85,,,,,,Center Attacking Midfield,2023-12-30,England - Premier League,2023/2024,20
+3892762,38992.0,Chelsea,8,,,,,[33.  12.4],Left Center Back,2023-08-13,England - Premier League,2023/2024,1
+3892849,29399.0,Chelsea,75,,,,,,Left Defensive Midfield,2023-10-28,England - Premier League,2023/2024,10
+3892803,23650.0,Manchester City,72,Incomplete,,,,,Left Wing,2023-09-16,England - Premier League,2023/2024,5
+3892973,40209.0,Liverpool,14,,,,,[115.7  66.6],Right Back,2024-01-31,England - Premier League,2023/2024,22
+3892940,23522.0,Tottenham Hotspur,67,,,,,[45.7 41.7],Right Center Back,2023-12-28,England - Premier League,2023/2024,19
+3892806,7097.0,Brentford,93,Incomplete,,,,,Center Defensive Midfield,2023-09-23,England - Premier League,2023/2024,6
+3892767,34526.0,Crystal Palace,83,,,,,,Left Center Back,2023-08-21,England - Premier League,2023/2024,2
+3892843,16028.0,Manchester United,35,,,,,,Right Back,2023-10-21,England - Premier League,2023/2024,9
+3892994,9640.0,West Ham United,80,,,,,,Center Forward,2024-02-11,England - Premier League,2023/2024,24
+3892787,3088.0,Brighton & Hove Albion,78,,,,,,Left Center Back,2023-09-02,England - Premier League,2023/2024,4
+3892823,22600.0,West Ham United,13,,,,,,Left Wing,2023-09-30,England - Premier League,2023/2024,7
+3893112,24016.0,Burnley,46,,,,,[68.8 19.3],Left Back,2024-05-04,England - Premier League,2023/2024,36
+3892998,3233.0,Chelsea,41,,,,,,Left Wing,2024-02-17,England - Premier League,2023/2024,25
+3892777,22809.0,Arsenal,6,,,,,,Right Center Back,2023-08-26,England - Premier League,2023/2024,3
+3893062,4735.0,Sheffield United,26,,,,,[110.1  75.5],Left Center Forward,2024-04-04,England - Premier League,2023/2024,31
+3893076,3318.0,Manchester United,0,,,,,,Left Wing,2024-04-13,England - Premier League,2023/2024,33
+3893079,37274.0,Brighton & Hove Albion,32,,,,,[ 9.7 39.1],Goalkeeper,2024-04-13,England - Premier League,2023/2024,33
+3892887,34526.0,Crystal Palace,1,,,,,,Left Center Back,2023-12-03,England - Premier League,2023/2024,14
+3893102,27886.0,Liverpool,12,,Success In Play,,,,Right Center Midfield,2024-04-27,England - Premier League,2023/2024,35
+3892795,3615.0,AFC Bournemouth,56,Incomplete,,,,,Right Defensive Midfield,2023-09-17,England - Premier League,2023/2024,5
+3892941,23230.0,Liverpool,4,,,,,,Left Center Midfield,2023-12-26,England - Premier League,2023/2024,19
+3924808,6590.0,AFC Bournemouth,30,,,,,,Goalkeeper,2024-03-13,England - Premier League,2023/2024,17
+3893124,9934.0,Nottingham Forest,50,Unknown,,,,,Center Attacking Midfield,2024-05-11,England - Premier League,2023/2024,37
+3892816,8067.0,Brighton & Hove Albion,79,,,,,[94.8 64.7],Right Back,2023-09-30,England - Premier League,2023/2024,7
+3893016,23616.0,Manchester City,0,,,,,,Center Forward,2024-03-03,England - Premier League,2023/2024,27
+3892927,4734.0,Aston Villa,16,,,,,[34.2 77.3],Right Back,2023-12-22,England - Premier League,2023/2024,18
+3892975,28104.0,Newcastle United,48,,,,,,Center Forward,2024-02-03,England - Premier League,2023/2024,23
+3892955,4354.0,Manchester City,49,,,,,,Right Wing,2024-01-13,England - Premier League,2023/2024,21
+3893121,23625.0,Everton,2,,,,,[52.7 76.7],Right Midfield,2024-05-11,England - Premier League,2023/2024,37
+3893035,151924.0,Burnley,15,,,,,[93.1 19.2],Center Attacking Midfield,2024-03-16,England - Premier League,2023/2024,29
+3893115,3097.0,Brighton & Hove Albion,30,,,,,,Right Defensive Midfield,2024-05-11,England - Premier League,2023/2024,37
+3892814,32587.0,Sheffield United,59,Incomplete,,,,,Left Defensive Midfield,2023-09-24,England - Premier League,2023/2024,6
+3893068,6846.0,Fulham,6,,,,,,Center Attacking Midfield,2024-04-06,England - Premier League,2023/2024,32
+3892926,38992.0,Chelsea,77,,,,,[59.9  8.5],Left Back,2023-12-24,England - Premier League,2023/2024,18
+3892796,10544.0,Crystal Palace,38,Incomplete,,,,,Left Center Forward,2023-09-16,England - Premier League,2023/2024,5
+3892828,10544.0,Crystal Palace,41,,,,,,Left Wing,2023-10-07,England - Premier League,2023/2024,8
+3893034,7294.0,Brentford,73,,,,,,Right Center Forward,2024-03-09,England - Premier League,2023/2024,28
+3892805,9905.0,Tottenham Hotspur,35,,,,,[36.8 59.2],Center Attacking Midfield,2023-09-24,England - Premier League,2023/2024,6
+3892991,3205.0,Manchester City,91,,,,,,Left Center Back,2024-02-10,England - Premier League,2023/2024,24
+3892873,37338.0,Everton,92,,,,,,Right Back,2023-11-11,England - Premier League,2023/2024,12
+3893069,89635.0,AFC Bournemouth,49,,,,,,Left Back,2024-04-06,England - Premier League,2023/2024,32
+3892921,4610.0,Brentford,19,,,,,[37.8 17.9],Center Back,2023-12-17,England - Premier League,2023/2024,17
+3892992,9934.0,Nottingham Forest,86,,,,,[83.5 56.8],Center Attacking Midfield,2024-02-10,England - Premier League,2023/2024,24
+3892878,8067.0,Brighton & Hove Albion,50,,,,,[44.5 73.6],Right Back,2023-11-25,England - Premier League,2023/2024,13
+3892758,3798.0,Fulham,14,Incomplete,,,,,Right Back,2023-08-12,England - Premier League,2023/2024,1
+3893090,33018.0,Manchester City,24,,,,,[50.7 13.1],Left Back,2024-05-14,England - Premier League,2023/2024,34
+3893116,22818.0,Tottenham Hotspur,40,,,,,,Left Wing,2024-05-11,England - Premier League,2023/2024,37
+3893095,3295.0,Chelsea,34,,,,,[56.  41.1],Right Center Back,2024-04-27,England - Premier League,2023/2024,35
+3892811,3328.0,West Ham United,82,,,,,,Center Attacking Midfield,2023-09-24,England - Premier League,2023/2024,6
+3892833,3328.0,West Ham United,80,,,,,[78.7 43. ],Right Defensive Midfield,2023-10-08,England - Premier League,2023/2024,8
+3892776,39136.0,AFC Bournemouth,51,,,,,[25.4 56. ],Right Center Back,2023-08-26,England - Premier League,2023/2024,3
+3893130,18753.0,Burnley,58,,,,,,Right Center Back,2024-05-19,England - Premier League,2023/2024,38
+3892990,11896.0,Sheffield United,88,,,,,,Right Wing Back,2024-02-10,England - Premier League,2023/2024,24
+3893129,50497.0,Chelsea,23,,,,,,Center Forward,2024-05-19,England - Premier League,2023/2024,38
+3892920,29840.0,Burnley,45,,,,,,Left Center Forward,2023-12-16,England - Premier League,2023/2024,17
+3892920,18753.0,Burnley,50,,,,,,Right Center Back,2023-12-16,England - Premier League,2023/2024,17
+3892783,20750.0,Liverpool,52,,,,,,Center Forward,2023-08-27,England - Premier League,2023/2024,3
+3892803,33018.0,Manchester City,88,,,,,[57.  22.2],Left Back,2023-09-16,England - Premier League,2023/2024,5
+3892954,5111.0,Everton,42,,,,,,Left Wing,2023-12-30,England - Premier League,2023/2024,20
+3892758,9923.0,Fulham,49,,,,,[108.9  13.1],Left Wing,2023-08-12,England - Premier League,2023/2024,1
+3892794,23625.0,Everton,29,,,,,,Right Midfield,2023-09-02,England - Premier League,2023/2024,4
+3893027,8819.0,Newcastle United,30,,,,,[91.1 71.8],Center Forward,2024-03-11,England - Premier League,2023/2024,28
+3893050,6409.0,AFC Bournemouth,49,,,,,[95.7 79.5],Right Back,2024-03-30,England - Premier League,2023/2024,30
+3892837,18753.0,Burnley,2,,,,,[28.2  3.8],Left Center Back,2023-10-21,England - Premier League,2023/2024,9
+3893008,34339.0,Nottingham Forest,81,,,,,,Center Attacking Midfield,2024-02-24,England - Premier League,2023/2024,26
+3892886,3017.0,Nottingham Forest,46,,,,,,Right Center Midfield,2023-12-02,England - Premier League,2023/2024,14
+3893020,32547.0,Tottenham Hotspur,72,,,,,,Left Center Back,2024-03-02,England - Premier League,2023/2024,27
+3893082,9442.0,Luton Town,20,,,,,[31.5 52. ],Left Attacking Midfield,2024-04-13,England - Premier League,2023/2024,33
+3893070,37726.0,Chelsea,26,,,,,[47.9 55.7],Left Defensive Midfield,2024-04-07,England - Premier League,2023/2024,32
+3892967,3472.0,Fulham,25,,,,,,Left Wing,2024-01-30,England - Premier League,2023/2024,22
+3893091,48941.0,Wolverhampton Wanderers,26,,,,,,Left Back,2024-04-20,England - Premier League,2023/2024,34
+3892949,27158.0,Liverpool,4,,,,,,Left Wing,2024-01-01,England - Premier League,2023/2024,20
+3893132,8819.0,Newcastle United,74,,,,,,Center Forward,2024-05-19,England - Premier League,2023/2024,38
+3893111,3088.0,Brighton & Hove Albion,64,,,,,[28.7 36.3],Left Center Back,2024-05-05,England - Premier League,2023/2024,36
+3893065,7024.0,Arsenal,11,,,,,,Center Defensive Midfield,2024-04-06,England - Premier League,2023/2024,32
+3892941,24938.0,Liverpool,45,,,,,,Right Center Midfield,2023-12-26,England - Premier League,2023/2024,19
+3892854,3664.0,Liverpool,14,,,,,,Right Back,2023-10-29,England - Premier League,2023/2024,10
+3892815,3614.0,AFC Bournemouth,56,,,,,[87.  71.7],Center Forward,2023-09-30,England - Premier League,2023/2024,7
+3892861,4625.0,Newcastle United,91,,,,,[55.2 61.2],Center Forward,2023-11-04,England - Premier League,2023/2024,11
+3892847,3822.0,Aston Villa,85,,,,,,Right Center Back,2023-10-29,England - Premier League,2023/2024,10
+3892879,27652.0,Sheffield United,48,,,,,,Right Center Back,2023-11-25,England - Premier League,2023/2024,13
+3892774,7439.0,Chelsea,35,,,,,,Right Center Back,2023-08-20,England - Premier League,2023/2024,2
+3892880,6849.0,Aston Villa,60,,,,,[63.7  7. ],Left Back,2023-11-26,England - Premier League,2023/2024,13
+3892904,3233.0,Chelsea,26,,,,,,Right Wing,2023-12-06,England - Premier League,2023/2024,15
+3893060,22600.0,West Ham United,21,,,,,[76.5 13.6],Right Center Midfield,2024-04-02,England - Premier League,2023/2024,31
+3892894,3067.0,Manchester City,0,Incomplete,,,,,Goalkeeper,2023-12-03,England - Premier League,2023/2024,14
+3892886,9934.0,Nottingham Forest,27,,,,,[54.3 65.2],Right Wing,2023-12-02,England - Premier League,2023/2024,14
+3892779,3088.0,Brighton & Hove Albion,35,,,,,,Left Center Back,2023-08-26,England - Premier League,2023/2024,3
+3892938,3943.0,Arsenal,83,,,,,,Center Defensive Midfield,2023-12-28,England - Premier League,2023/2024,19
+3893060,4781.0,West Ham United,5,,,,,,Right Center Back,2024-04-02,England - Premier League,2023/2024,31
+3893001,3470.0,Everton,33,,,,,,Center Forward,2024-02-19,England - Premier League,2023/2024,25
+3892984,4706.0,West Ham United,85,,,,,,Right Back,2024-02-04,England - Premier League,2023/2024,23
+3892931,9827.0,Luton Town,41,,,,,,Center Forward,2023-12-23,England - Premier League,2023/2024,18
+3892943,33018.0,Manchester City,45,,,0.021726202,,,Right Center Back,2023-12-27,England - Premier League,2023/2024,19
+3892841,41437.0,Crystal Palace,39,,,,,,Left Back,2023-10-21,England - Premier League,2023/2024,9
+3892828,4274.0,Nottingham Forest,41,,,,,,Left Wing,2023-10-07,England - Premier League,2023/2024,8
+3892947,32928.0,Brentford,66,,,,,[99.2 76.4],Left Center Forward,2023-12-30,England - Premier League,2023/2024,20
+3892792,3349.0,West Ham United,63,Incomplete,,,,,Center Forward,2023-09-01,England - Premier League,2023/2024,4
+3892859,3495.0,Liverpool,27,,,,,[50.  25.2],Left Back,2023-11-05,England - Premier League,2023/2024,11
+3892883,3336.0,Manchester United,47,,,,,,Right Center Back,2023-11-26,England - Premier League,2023/2024,13
+3893040,9650.0,Fulham,72,,,,,,Right Center Back,2024-03-16,England - Premier League,2023/2024,29
+3892908,40908.0,Liverpool,20,,,,,[33.5 62.7],Right Center Back,2023-12-09,England - Premier League,2023/2024,16
+3892857,3627.0,Burnley,38,,,,,[61.8 19.9],Left Back,2023-11-04,England - Premier League,2023/2024,11
+3892960,3088.0,Brighton & Hove Albion,9,,,,,,Left Center Back,2024-01-22,England - Premier League,2023/2024,21
+3892842,12352.0,Nottingham Forest,56,,,,,[14.5 39.3],Goalkeeper,2023-10-21,England - Premier League,2023/2024,9
+3892977,28672.0,Nottingham Forest,47,Incomplete,,,,,Left Defensive Midfield,2024-02-04,England - Premier League,2023/2024,23
+3892767,34526.0,Crystal Palace,74,,,,,[66.6 38.5],Left Center Back,2023-08-21,England - Premier League,2023/2024,2
+3892954,5620.0,Wolverhampton Wanderers,48,,,,,,Center Forward,2023-12-30,England - Premier League,2023/2024,20
+3892797,17592.0,Arsenal,33,,,,,,Right Center Back,2023-09-17,England - Premier League,2023/2024,5
+3892821,7097.0,Brentford,90,Incomplete,,,,,Center Defensive Midfield,2023-10-01,England - Premier League,2023/2024,7
+3893075,12169.0,Fulham,2,,,,,,Left Defensive Midfield,2024-04-14,England - Premier League,2023/2024,33
+3892967,12169.0,Fulham,31,,,,,,Right Defensive Midfield,2024-01-30,England - Premier League,2023/2024,22
+3893067,29840.0,Burnley,83,Incomplete,,,,,Right Wing,2024-04-06,England - Premier League,2023/2024,32
+3892985,12074.0,Brentford,24,,,,,[24.4 39.5],Left Center Midfield,2024-02-10,England - Premier League,2023/2024,24
+3893122,5547.0,Liverpool,48,,,,,,Goalkeeper,2024-05-13,England - Premier League,2023/2024,37
+3892936,3297.0,Luton Town,8,,,,,[96.7 75.3],Right Attacking Midfield,2023-12-26,England - Premier League,2023/2024,19
+3892912,16028.0,Manchester United,8,,,,,[106.   30.4],Right Back,2023-12-09,England - Premier League,2023/2024,16
+3892773,3690.0,Manchester United,33,,,,,[12.6 74.3],Right Back,2023-08-19,England - Premier League,2023/2024,2
+3893044,51672.0,Manchester United,30,,,,,[111.9  26.9],Center Forward,2024-04-24,England - Premier League,2023/2024,29
+3892935,3198.0,Nottingham Forest,39,,,,,,Right Center Back,2023-12-26,England - Premier League,2023/2024,19
+3892862,3822.0,Aston Villa,43,,,,,[42.8 46.8],Right Center Back,2023-11-05,England - Premier League,2023/2024,11
+3892845,3627.0,Burnley,42,,,,,,Left Back,2023-10-28,England - Premier League,2023/2024,10
+3892902,8252.0,Arsenal,51,,,,,[55.6 44.7],Right Center Midfield,2023-12-05,England - Premier League,2023/2024,15
+3893028,4605.0,Luton Town,37,,,,,,Right Center Back,2024-03-09,England - Premier League,2023/2024,28
+3892791,3822.0,Aston Villa,31,,,,,[55.2 34.8],Right Back,2023-09-03,England - Premier League,2023/2024,4
+3893024,4605.0,Luton Town,34,,,,,,Right Center Back,2024-03-02,England - Premier League,2023/2024,27
+3892861,3474.0,Newcastle United,1,Incomplete,,,,,Goalkeeper,2023-11-04,England - Premier League,2023/2024,11
+3892802,5474.0,Tottenham Hotspur,83,,,,,[108.7   3. ],Left Wing,2023-09-16,England - Premier League,2023/2024,5
+3892998,3306.0,Manchester City,80,,,,,,Left Back,2024-02-17,England - Premier League,2023/2024,25
+3893007,17592.0,Arsenal,14,,,,,[56.  69.4],Right Center Back,2024-02-24,England - Premier League,2023/2024,26
+3893097,43779.0,Fulham,43,,,,,,Left Center Back,2024-04-27,England - Premier League,2023/2024,35
+3892993,30691.0,Brighton & Hove Albion,39,,Success In Play,,,,Right Center Back,2024-02-10,England - Premier League,2023/2024,24
+3893104,95042.0,AFC Bournemouth,53,,,,,[17.7  4.3],Left Back,2024-04-28,England - Premier League,2023/2024,35
+3893002,8252.0,Arsenal,27,,,,,[96.2 50.5],Right Center Midfield,2024-02-17,England - Premier League,2023/2024,25
+3893093,7097.0,Brentford,90,,,,,,Right Center Midfield,2024-04-20,England - Premier League,2023/2024,34
+3893091,142702.0,Wolverhampton Wanderers,21,,,,,,Left Center Forward,2024-04-20,England - Premier League,2023/2024,34
+3892857,9458.0,Crystal Palace,65,,,,,,Goalkeeper,2023-11-04,England - Premier League,2023/2024,11
+3892846,15304.0,Sheffield United,45,,,,,,Right Center Forward,2023-10-28,England - Premier League,2023/2024,10
+3892909,3468.0,Everton,12,,,,,,Goalkeeper,2023-12-10,England - Premier League,2023/2024,16
+3892997,3864.0,Newcastle United,17,Incomplete,,,,,Left Back,2024-02-17,England - Premier League,2023/2024,25
+3893010,32547.0,Tottenham Hotspur,75,,,,,,Left Center Back,2024-05-02,England - Premier League,2023/2024,26
+3892929,15581.0,Fulham,72,,,,,,Goalkeeper,2023-12-23,England - Premier League,2023/2024,18
+3892987,38718.0,Chelsea,62,,,,,[69.6 54.1],Left Defensive Midfield,2024-02-12,England - Premier League,2023/2024,24
+3893012,3647.0,Fulham,60,,,,,[56.3 42.3],Left Wing,2024-02-24,England - Premier League,2023/2024,26
+3893110,4349.0,Fulham,4,,,,,[29.3 77.3],Right Center Back,2024-05-04,England - Premier League,2023/2024,36
+3892878,3505.0,Nottingham Forest,40,,,,,,Center Forward,2023-11-25,England - Premier League,2023/2024,13
+3893098,151924.0,Burnley,5,Incomplete,,,,,Right Midfield,2024-04-27,England - Premier League,2023/2024,35
+3892971,6590.0,AFC Bournemouth,20,,,,,,Goalkeeper,2024-02-01,England - Premier League,2023/2024,22
+3892900,25142.0,Newcastle United,90,,,,,,Center Defensive Midfield,2023-12-07,England - Premier League,2023/2024,15
+3892895,11292.0,Tottenham Hotspur,56,,,,,,Right Back,2023-12-07,England - Premier League,2023/2024,15
+3892981,42298.0,Burnley,66,,,,,,Goalkeeper,2024-02-03,England - Premier League,2023/2024,23
+3892787,31067.0,Brighton & Hove Albion,35,,,,,[71.1 31.3],Left Defensive Midfield,2023-09-02,England - Premier League,2023/2024,4
+3892944,8214.0,Aston Villa,59,,,0.1176722,,,Right Wing,2023-12-26,England - Premier League,2023/2024,19
+3892772,10485.0,Sheffield United,97,,,,,,Left Center Back,2023-08-18,England - Premier League,2023/2024,2
+3893011,34959.0,Liverpool,79,,,,,,Goalkeeper,2024-02-21,England - Premier League,2023/2024,26
+3892804,3502.0,Liverpool,20,,,,,,Right Center Back,2023-09-16,England - Premier League,2023/2024,5
+3893044,16028.0,Manchester United,11,,,,,[118.9  25.1],Left Back,2024-04-24,England - Premier League,2023/2024,29
+3893101,3943.0,Arsenal,24,,,,,,Left Center Midfield,2024-04-28,England - Premier League,2023/2024,35
+3892848,6374.0,Wolverhampton Wanderers,29,,,,,,Right Back,2023-10-28,England - Premier League,2023/2024,10
+3893003,25000.0,Brentford,83,,,,,,Goalkeeper,2024-02-17,England - Premier League,2023/2024,25
+3892850,31225.0,Tottenham Hotspur,42,,,,,,Goalkeeper,2023-10-27,England - Premier League,2023/2024,10
+3892985,24940.0,Wolverhampton Wanderers,43,,,,,,Right Center Back,2024-02-10,England - Premier League,2023/2024,24
+3892849,29399.0,Chelsea,17,,,,,[92.6 20.9],Left Defensive Midfield,2023-10-28,England - Premier League,2023/2024,10
+3893058,48941.0,Wolverhampton Wanderers,68,,,,,[56.1  2.8],Left Center Back,2024-04-02,England - Premier League,2023/2024,31
+3892866,3943.0,Arsenal,44,,,,,[92.3 53.4],Left Center Midfield,2023-11-11,England - Premier League,2023/2024,12
+3893041,43604.0,Luton Town,3,,,,,[44.  33.1],Center Back,2024-03-16,England - Premier League,2023/2024,29
+3893103,48941.0,Wolverhampton Wanderers,1,,,,,[70.6  5.5],Left Center Back,2024-04-27,England - Premier League,2023/2024,35
+3892888,25000.0,Brentford,77,Incomplete,,,,,Goalkeeper,2023-12-02,England - Premier League,2023/2024,14
+3892755,29560.0,Manchester City,78,,,,,[108.9  32.7],Left Center Midfield,2023-08-11,England - Premier League,2023/2024,1
+3892968,6406.0,Arsenal,67,,,,,[ 7.1 12.2],Left Center Back,2024-01-30,England - Premier League,2023/2024,22
+3892870,3328.0,West Ham United,28,,,,,,Left Defensive Midfield,2023-11-12,England - Premier League,2023/2024,12
+3893055,95042.0,AFC Bournemouth,2,,,,,,Left Wing,2024-04-02,England - Premier League,2023/2024,31
+3892812,24940.0,Wolverhampton Wanderers,72,,,,,[24.4 41.7],Left Center Back,2023-09-23,England - Premier League,2023/2024,6
+3892895,3570.0,Tottenham Hotspur,38,,,,,,Right Defensive Midfield,2023-12-07,England - Premier League,2023/2024,15
+3892880,6849.0,Aston Villa,75,,Success In Play,,,,Left Back,2023-11-26,England - Premier League,2023/2024,13
+3892775,38718.0,Chelsea,9,,,,,[82.4 41.7],Left Attacking Midfield,2023-08-25,England - Premier League,2023/2024,3
+3892875,34526.0,Crystal Palace,3,,,,,,Left Center Back,2023-11-25,England - Premier League,2023/2024,13
+3892905,25000.0,Brentford,26,,,,,[44.6 38.6],Goalkeeper,2023-12-09,England - Premier League,2023/2024,16
+3892844,50498.0,Tottenham Hotspur,43,,,,,,Right Defensive Midfield,2023-10-23,England - Premier League,2023/2024,9
+3892824,48941.0,Wolverhampton Wanderers,70,,,,,[54.3  4.8],Left Center Back,2023-09-30,England - Premier League,2023/2024,7
+3892969,6826.0,Aston Villa,79,,,,,[43.3 24. ],Left Center Back,2024-01-30,England - Premier League,2023/2024,22
+3893113,21368.0,Chelsea,68,,,,,[65.7  5.3],Left Center Back,2024-05-05,England - Premier League,2023/2024,36
+3893060,50498.0,Tottenham Hotspur,75,,Success In Play,,,,Left Defensive Midfield,2024-04-02,England - Premier League,2023/2024,31
+3892985,23256.0,Wolverhampton Wanderers,65,,,,,,Center Forward,2024-02-10,England - Premier League,2023/2024,24
+3892793,6846.0,Fulham,26,,,,,,Right Center Midfield,2023-09-02,England - Premier League,2023/2024,4
+3892828,10544.0,Crystal Palace,57,,,,,,Left Wing,2023-10-07,England - Premier League,2023/2024,8
+3892789,31506.0,Chelsea,88,,,,,,Right Defensive Midfield,2023-09-02,England - Premier League,2023/2024,4
+3892933,27773.0,AFC Bournemouth,76,,,,,[95.2 14.9],Left Center Back,2023-12-23,England - Premier League,2023/2024,18
+3892932,23650.0,Manchester City,61,,,,,[89.8 42.4],Left Wing,2024-02-20,England - Premier League,2023/2024,18
+3892818,29399.0,Chelsea,10,,,,,,Right Center Midfield,2023-10-02,England - Premier League,2023/2024,7
+3892859,3839.0,Luton Town,13,,,,,[26.9 55.8],Center Back,2023-11-05,England - Premier League,2023/2024,11
+3893130,6555.0,Nottingham Forest,43,,,,,,Left Back,2024-05-19,England - Premier League,2023/2024,38
+3892934,3628.0,Everton,49,Incomplete,,,,,Right Center Back,2023-12-23,England - Premier League,2023/2024,18
+3892831,3570.0,Tottenham Hotspur,54,,,,,[37.9 61.4],Left Defensive Midfield,2023-10-07,England - Premier League,2023/2024,8
+3893108,214746.0,Sheffield United,70,,,,,,Center Defensive Midfield,2024-05-04,England - Premier League,2023/2024,36
+3892964,48461.0,Tottenham Hotspur,7,,,,,,Left Back,2024-01-14,England - Premier League,2023/2024,21
+3892803,3205.0,Manchester City,11,,,,,,Right Back,2023-09-16,England - Premier League,2023/2024,5
+3893030,23625.0,Everton,43,,,,,,Right Defensive Midfield,2024-03-09,England - Premier League,2023/2024,28
+3892985,3951.0,Wolverhampton Wanderers,66,,,,,,Left Defensive Midfield,2024-02-10,England - Premier League,2023/2024,24
+3892881,22084.0,Arsenal,59,,,,,[103.9  71.3],Right Wing,2023-11-25,England - Premier League,2023/2024,13
+3892783,5537.0,Newcastle United,92,,,,,,Right Center Back,2023-08-27,England - Premier League,2023/2024,3
+3892988,27773.0,AFC Bournemouth,96,,,,,[93.2 15. ],Left Center Back,2024-02-10,England - Premier League,2023/2024,24
+3892772,107581.0,Sheffield United,49,,,,,,Left Attacking Midfield,2023-08-18,England - Premier League,2023/2024,2
+3892847,23636.0,Luton Town,81,,,,,,Left Wing,2023-10-29,England - Premier League,2023/2024,10
+3893114,27423.0,Crystal Palace,92,,,,,,Right Wing Back,2024-05-06,England - Premier League,2023/2024,36
+3893094,89635.0,AFC Bournemouth,76,,,,,,Left Wing,2024-04-21,England - Premier League,2023/2024,34
+3893083,32547.0,Tottenham Hotspur,43,,,,,,Left Center Back,2024-04-13,England - Premier League,2023/2024,33
+3893025,11292.0,Tottenham Hotspur,62,,,,,[57.6 74.8],Right Back,2024-03-10,England - Premier League,2023/2024,28
+3892935,46451.0,Nottingham Forest,28,,,,,[90.3 53.2],Right Defensive Midfield,2023-12-26,England - Premier League,2023/2024,19
+3892882,3685.0,Burnley,45,,,,,,Right Center Forward,2023-11-25,England - Premier League,2023/2024,13
+3892913,22145.0,Tottenham Hotspur,92,,,,,[63.4 46.7],Right Wing,2023-12-10,England - Premier League,2023/2024,16
+3892918,3620.0,Manchester United,10,,,,,[94.  50.2],Center Attacking Midfield,2023-12-17,England - Premier League,2023/2024,17
+3892952,9934.0,Nottingham Forest,0,,,,,,Center Attacking Midfield,2023-12-30,England - Premier League,2023/2024,20
+3893095,6909.0,Aston Villa,20,,,,,[13.2 27.2],Goalkeeper,2024-04-27,England - Premier League,2023/2024,35
+3892849,7097.0,Brentford,92,,,,,[28.1 57.1],Center Defensive Midfield,2023-10-28,England - Premier League,2023/2024,10
+3893124,3295.0,Chelsea,27,,,,,,Right Center Back,2024-05-11,England - Premier League,2023/2024,37
+3893101,8252.0,Arsenal,81,,,,,[90.1 72.4],Right Center Midfield,2024-04-28,England - Premier League,2023/2024,35
+3892878,3198.0,Nottingham Forest,15,,,,,[18.5 49.3],Right Center Back,2023-11-25,England - Premier League,2023/2024,13
+3892990,11896.0,Sheffield United,78,Incomplete,,,,,Right Wing Back,2024-02-10,England - Premier League,2023/2024,24
+3892797,16559.0,Arsenal,42,,,,,,Left Wing,2023-09-17,England - Premier League,2023/2024,5
+3892978,22084.0,Arsenal,69,Incomplete,,,,,Right Wing,2024-02-04,England - Premier League,2023/2024,23
+3892885,8819.0,Newcastle United,19,,,,,,Center Forward,2023-12-02,England - Premier League,2023/2024,14
+3893055,3520.0,Crystal Palace,91,,,,,,Right Wing,2024-04-02,England - Premier League,2023/2024,31
+3893048,37726.0,Chelsea,50,,,,,[57.8 65.7],Right Defensive Midfield,2024-03-30,England - Premier League,2023/2024,30
+3893002,22084.0,Arsenal,3,,,,,[51.7 78.1],Right Wing,2024-02-17,England - Premier League,2023/2024,25
+3892865,9938.0,AFC Bournemouth,15,,,,,,Left Back,2023-11-11,England - Premier League,2023/2024,12
+3892790,5620.0,Wolverhampton Wanderers,75,,,,,,Right Midfield,2023-09-03,England - Premier League,2023/2024,4
+3892941,18753.0,Burnley,29,,,,,[53.7 20.6],Right Center Back,2023-12-26,England - Premier League,2023/2024,19
+3892967,23625.0,Everton,15,,,,,[78.  39.6],Right Defensive Midfield,2024-01-30,England - Premier League,2023/2024,22
+3893026,34794.0,Nottingham Forest,81,,,,,,Right Back,2024-03-10,England - Premier League,2023/2024,28
+3893009,3470.0,Everton,64,,,,,[58.9 20.3],Center Forward,2024-02-24,England - Premier League,2023/2024,26
+3892954,48347.0,Everton,45,,,,,[64.3 32.8],Right Defensive Midfield,2023-12-30,England - Premier League,2023/2024,20
+3892798,3798.0,Fulham,46,,,,,,Right Back,2023-09-16,England - Premier League,2023/2024,5
+3893097,4614.0,Fulham,74,Out,,,,,Left Back,2024-04-27,England - Premier League,2023/2024,35
+3893068,43779.0,Fulham,24,,,,,,Left Center Back,2024-04-06,England - Premier League,2023/2024,32
+3892826,226169.0,Brighton & Hove Albion,56,,,,,,Right Defensive Midfield,2023-10-08,England - Premier League,2023/2024,8
+3893047,5485.0,Manchester United,25,,,,,[21.  18.2],Left Center Back,2024-03-30,England - Premier League,2023/2024,30
+3892785,39162.0,Arsenal,93,,,,,,Left Center Midfield,2023-09-03,England - Premier League,2023/2024,4
+3893029,21209.0,Liverpool,39,,,,,[73.3 28.1],Left Center Midfield,2024-03-10,England - Premier League,2023/2024,28
+3892813,3017.0,Nottingham Forest,29,,,,,,Right Defensive Midfield,2023-09-23,England - Premier League,2023/2024,6
+3893052,271487.0,Nottingham Forest,45,,,,,[66.7 28.6],Left Center Back,2024-03-30,England - Premier League,2023/2024,30
+3892935,5537.0,Newcastle United,15,,,,Lost In Play,,Right Center Back,2023-12-26,England - Premier League,2023/2024,19
+3892893,43779.0,Fulham,45,Incomplete,,,,,Right Center Back,2023-12-03,England - Premier League,2023/2024,14
+3892814,50563.0,Sheffield United,18,,,,,,Center Forward,2023-09-24,England - Premier League,2023/2024,6
+3892993,47553.0,Brighton & Hove Albion,33,,,,,[16.9 42.5],Goalkeeper,2024-02-10,England - Premier League,2023/2024,24
+3893052,4239.0,Nottingham Forest,63,,,,,[57.5 24.6],Right Defensive Midfield,2024-03-30,England - Premier League,2023/2024,30
+3893065,3202.0,Arsenal,57,,,,,,Left Wing,2024-04-06,England - Premier League,2023/2024,32
+3892894,23522.0,Tottenham Hotspur,67,,,,,[ 8.5 65.9],Right Center Back,2023-12-03,England - Premier League,2023/2024,14
+3892796,8247.0,Crystal Palace,18,,,,,[13.7 49.6],Right Center Back,2023-09-16,England - Premier League,2023/2024,5
+3892938,17592.0,Arsenal,48,,,,,,Right Center Back,2023-12-28,England - Premier League,2023/2024,19
+3893067,3292.0,Everton,71,,,,,[40.5 27.3],Center Attacking Midfield,2024-04-06,England - Premier League,2023/2024,32
+3892760,4143.0,AFC Bournemouth,92,,,,,,Left Defensive Midfield,2023-08-12,England - Premier League,2023/2024,1
+3893131,5539.0,Manchester United,40,,,,,[38.2 61.8],Right Center Back,2024-05-19,England - Premier League,2023/2024,38
+3892859,13306.0,Luton Town,17,,,,,[93.4 15.5],Left Wing,2023-11-05,England - Premier League,2023/2024,11
+3892764,12111.0,Wolverhampton Wanderers,11,,,,,[44.1  5.8],Left Back,2023-08-14,England - Premier League,2023/2024,1
+3893129,39136.0,AFC Bournemouth,97,,,,,,Right Center Back,2024-05-19,England - Premier League,2023/2024,38
+3893060,5557.0,Tottenham Hotspur,2,Incomplete,,,,,Left Wing,2024-04-02,England - Premier League,2023/2024,31
+3893024,4760.0,Aston Villa,21,,,,,[115.7  58.9],Center Forward,2024-03-02,England - Premier League,2023/2024,27
+3892826,3097.0,Brighton & Hove Albion,2,,,,,[28.2 30.5],Left Defensive Midfield,2023-10-08,England - Premier League,2023/2024,8
+3892823,35592.0,Sheffield United,92,,,,,,Left Center Midfield,2023-09-30,England - Premier League,2023/2024,7
+3893133,5111.0,Everton,66,,,,,[49.2  6.1],Left Midfield,2024-05-19,England - Premier League,2023/2024,38
+3893043,34789.0,Wolverhampton Wanderers,51,,,,,[74. 31.],Left Center Midfield,2024-04-24,England - Premier League,2023/2024,29
+3892987,41266.0,Crystal Palace,36,,,,,,Left Center Back,2024-02-12,England - Premier League,2023/2024,24
+3893086,105392.0,Brighton & Hove Albion,92,,,,,[78.9 77.6],Left Wing,2024-05-15,England - Premier League,2023/2024,34
+3892984,8064.0,Manchester United,1,,,,,[ 7.8 41.7],Goalkeeper,2024-02-04,England - Premier League,2023/2024,23
+3892827,9843.0,Chelsea,15,,,,,,Goalkeeper,2023-10-07,England - Premier League,2023/2024,8
+3893077,6849.0,Aston Villa,46,,,0.08766256,,,Left Back,2024-04-14,England - Premier League,2023/2024,33
+3892880,6574.0,Aston Villa,78,,,,,,Left Defensive Midfield,2023-11-26,England - Premier League,2023/2024,13
+3892987,3450.0,Crystal Palace,80,,,,,,Right Midfield,2024-02-12,England - Premier League,2023/2024,24
+3892839,9929.0,Liverpool,68,,,,,[103.3  11.7],Center Forward,2023-10-21,England - Premier League,2023/2024,9
+3892768,58502.0,Brentford,53,,,,,,Left Wing,2023-08-19,England - Premier League,2023/2024,2
+3893080,23625.0,Everton,14,,,,,,Left Defensive Midfield,2024-04-15,England - Premier League,2023/2024,33
+3892887,41266.0,Crystal Palace,22,,,,,[41.2 48. ],Center Defensive Midfield,2023-12-03,England - Premier League,2023/2024,14
+3893040,6989.0,Fulham,53,,,,,,Right Back,2024-03-16,England - Premier League,2023/2024,29
+3924808,4220.0,Luton Town,18,,,,,,Center Forward,2024-03-13,England - Premier League,2023/2024,17
+3893063,5549.0,Manchester City,46,,,,,[79.5 63. ],Right Center Back,2024-04-03,England - Premier League,2023/2024,31
+3893023,3097.0,Brighton & Hove Albion,78,,,,,,Center Back,2024-03-02,England - Premier League,2023/2024,27
+3893094,8214.0,Aston Villa,66,,,,,[94.  61.3],Right Wing,2024-04-21,England - Premier League,2023/2024,34
+3893058,89326.0,Burnley,14,,,,,,Left Center Forward,2024-04-02,England - Premier League,2023/2024,31
+3893053,28104.0,Newcastle United,37,,,,,,Left Wing,2024-03-30,England - Premier League,2023/2024,30
+3892796,9458.0,Crystal Palace,26,,,,,,Goalkeeper,2023-09-16,England - Premier League,2023/2024,5
+3892913,3083.0,Tottenham Hotspur,39,,,,,[100.3  34.1],Left Wing,2023-12-10,England - Premier League,2023/2024,16
+3893020,27423.0,Crystal Palace,78,,,,,,Right Wing Back,2024-03-02,England - Premier League,2023/2024,27
+3892907,3473.0,Brighton & Hove Albion,55,,,,,[102.1  71.5],Left Back,2023-12-09,England - Premier League,2023/2024,16
+3893071,3083.0,Tottenham Hotspur,13,,,,,,Center Forward,2024-04-07,England - Premier League,2023/2024,32
+3893019,11896.0,Sheffield United,92,,,,,,Right Back,2024-03-04,England - Premier League,2023/2024,27
+3892963,11538.0,Aston Villa,24,,,,,[90.1  7.8],Left Back,2024-01-14,England - Premier League,2023/2024,21
+3893131,5539.0,Manchester United,45,,,,,,Right Center Back,2024-05-19,England - Premier League,2023/2024,38
+3893087,8247.0,Crystal Palace,76,,,,,,Center Back,2024-04-21,England - Premier League,2023/2024,34
+3892818,12169.0,Fulham,10,,,,,[42.6 25.4],Left Defensive Midfield,2023-10-02,England - Premier League,2023/2024,7
+3893129,32565.0,Chelsea,1,,,,,[21.4 42.1],Goalkeeper,2024-05-19,England - Premier League,2023/2024,38
+3892981,112254.0,Burnley,62,,,,,,Left Center Back,2024-02-03,England - Premier League,2023/2024,23
+3892830,9923.0,Fulham,49,Incomplete,,,,,Right Wing,2023-10-07,England - Premier League,2023/2024,8
+3892877,28104.0,Newcastle United,53,,,,,[29.3 10.1],Left Wing,2023-11-25,England - Premier League,2023/2024,13
+3892849,4766.0,Brentford,84,,,,,,Left Center Forward,2023-10-28,England - Premier League,2023/2024,10
+3892822,27158.0,Liverpool,65,,,,,[36.9 43.5],Left Wing,2023-09-30,England - Premier League,2023/2024,7
+3893126,11936.0,Fulham,37,,,,,,Right Defensive Midfield,2024-05-19,England - Premier League,2023/2024,38
+3892936,49667.0,Sheffield United,45,,,,,,Right Midfield,2023-12-26,England - Premier League,2023/2024,19
+3892900,13291.0,Newcastle United,60,,,,,,Left Center Midfield,2023-12-07,England - Premier League,2023/2024,15
+3893042,16570.0,West Ham United,51,,,,,,Right Back,2024-03-17,England - Premier League,2023/2024,29
+3892805,22084.0,Arsenal,90,,,,,,Right Wing,2023-09-24,England - Premier League,2023/2024,6
+3893014,3523.0,Wolverhampton Wanderers,24,,,,,,Center Back,2024-02-25,England - Premier League,2023/2024,26
+3892855,3097.0,Brighton & Hove Albion,44,,,,,[27.1 18.2],Left Defensive Midfield,2023-11-04,England - Premier League,2023/2024,11
+3893007,4127.0,Arsenal,77,,,,,,Goalkeeper,2024-02-24,England - Premier League,2023/2024,26
+3893054,6846.0,Fulham,11,Incomplete,,,,,Center Attacking Midfield,2024-03-30,England - Premier League,2023/2024,30
+3892937,3798.0,Fulham,48,,,,,[104.1  71. ],Right Back,2023-12-26,England - Premier League,2023/2024,19
+3892768,7097.0,Brentford,55,,,,,,Center Defensive Midfield,2023-08-19,England - Premier League,2023/2024,2
+3892887,3450.0,Crystal Palace,29,,,,,,Left Midfield,2023-12-03,England - Premier League,2023/2024,14
+3892987,41437.0,Crystal Palace,31,,,,,,Left Back,2024-02-12,England - Premier League,2023/2024,24
+3892858,51672.0,Manchester United,24,,,,,,Center Forward,2023-11-04,England - Premier League,2023/2024,11
+3892959,46451.0,Nottingham Forest,81,,,,,[77.1 48.7],Left Center Midfield,2024-01-20,England - Premier League,2023/2024,21
+3892832,4935.0,Brentford,51,,,,,[63.4  8. ],Right Center Forward,2023-10-07,England - Premier League,2023/2024,8
+3892854,24938.0,Liverpool,66,,,,,,Left Center Midfield,2023-10-29,England - Premier League,2023/2024,10
+3893013,18722.0,Brentford,72,,,,,,Left Center Midfield,2024-02-26,England - Premier League,2023/2024,26
+3893081,27423.0,Crystal Palace,51,,,,,[118.5  61.6],Right Wing Back,2024-04-14,England - Premier League,2023/2024,33
+3892812,48720.0,Wolverhampton Wanderers,89,,,,,,Left Defensive Midfield,2023-09-23,England - Premier League,2023/2024,6
+3892860,9938.0,AFC Bournemouth,48,,,,,,Left Center Back,2023-11-04,England - Premier League,2023/2024,11
+3893013,4766.0,Brentford,61,,,,,,Left Center Forward,2024-02-26,England - Premier League,2023/2024,26
+3893021,20827.0,Everton,5,,,,,,Left Back,2024-03-02,England - Premier League,2023/2024,27
+3893075,3262.0,West Ham United,99,,,,,,Goalkeeper,2024-04-14,England - Premier League,2023/2024,33
+3893068,12169.0,Fulham,30,,,,,,Right Defensive Midfield,2024-04-06,England - Premier League,2023/2024,32
+3893045,37274.0,Brighton & Hove Albion,6,,,,,[ 6.  36.3],Goalkeeper,2024-03-31,England - Premier League,2023/2024,30
+3892904,9843.0,Chelsea,55,,,,,,Goalkeeper,2023-12-06,England - Premier League,2023/2024,15
+3892979,33018.0,Manchester City,56,,,,,,Left Back,2024-02-05,England - Premier League,2023/2024,23
+3892788,9905.0,Tottenham Hotspur,65,,,,,[44.5 20.5],Center Attacking Midfield,2023-09-02,England - Premier League,2023/2024,4
+3892854,3669.0,Liverpool,66,,,,,,Left Center Back,2023-10-29,England - Premier League,2023/2024,10
+3893043,34789.0,Wolverhampton Wanderers,53,,,,,,Left Center Midfield,2024-04-24,England - Premier League,2023/2024,29
+3892846,4127.0,Arsenal,17,,,,,[23.3 27. ],Goalkeeper,2023-10-28,England - Premier League,2023/2024,10
+3892982,3468.0,Everton,85,,,,,,Goalkeeper,2024-02-03,England - Premier League,2023/2024,23
+3892864,4385.0,Tottenham Hotspur,61,,,,,,Left Defensive Midfield,2023-11-06,England - Premier League,2023/2024,11
+3893068,134092.0,Newcastle United,2,,,,,,Left Back,2024-04-06,England - Premier League,2023/2024,32
+3893010,22818.0,Tottenham Hotspur,94,,,,,[65.6 78.7],Center Attacking Midfield,2024-05-02,England - Premier League,2023/2024,26
+3892767,22809.0,Arsenal,35,,,,,,Right Center Back,2023-08-21,England - Premier League,2023/2024,2
+3892791,3495.0,Liverpool,6,,,,,[56.5 32.1],Left Center Back,2023-09-03,England - Premier League,2023/2024,4
+3892903,21209.0,Liverpool,30,,,,,,Right Center Midfield,2023-12-06,England - Premier League,2023/2024,15
+3893110,7097.0,Brentford,21,,,,,[55.8 75.6],Center Defensive Midfield,2024-05-04,England - Premier League,2023/2024,36
+3893103,6374.0,Wolverhampton Wanderers,90,,,,,[33.5 58.4],Right Center Back,2024-04-27,England - Premier League,2023/2024,35
+3893037,130655.0,Brighton & Hove Albion,18,,,,,,Left Back,2024-04-25,England - Premier League,2023/2024,29
+3892834,3366.0,Aston Villa,98,,,,,,Right Center Back,2023-10-08,England - Premier League,2023/2024,8
+3892935,3864.0,Newcastle United,30,Incomplete,,,,,Left Back,2023-12-26,England - Premier League,2023/2024,19
+3892919,3295.0,Chelsea,80,Incomplete,,,,,Right Center Back,2023-12-16,England - Premier League,2023/2024,17
+3892901,3017.0,Nottingham Forest,13,,,,,,Left Defensive Midfield,2023-12-06,England - Premier League,2023/2024,15
+3892942,29399.0,Chelsea,42,,,,,[84.5 58.5],Right Defensive Midfield,2023-12-27,England - Premier League,2023/2024,19
+3893116,22818.0,Tottenham Hotspur,12,,,,,,Left Wing,2024-05-11,England - Premier League,2023/2024,37
+3893014,23256.0,Wolverhampton Wanderers,31,Incomplete,,,,,Left Wing,2024-02-25,England - Premier League,2023/2024,26
+3892942,50497.0,Chelsea,43,,,,,,Center Forward,2023-12-27,England - Premier League,2023/2024,19
+3893110,45803.0,Brentford,90,,,,,[68.  57.6],Left Center Midfield,2024-05-04,England - Premier League,2023/2024,36
+3892859,43604.0,Luton Town,67,,,,,,Right Center Back,2023-11-05,England - Premier League,2023/2024,11
+3892811,3349.0,West Ham United,0,,,,,,Center Forward,2023-09-24,England - Premier League,2023/2024,6
+3892852,3062.0,West Ham United,68,,,,,,Left Back,2023-10-29,England - Premier League,2023/2024,10
+3893002,22219.0,Burnley,69,,,,,,Left Back,2024-02-17,England - Premier League,2023/2024,25
+3892872,3067.0,Manchester City,88,,,,,[16.3 50.9],Goalkeeper,2023-11-12,England - Premier League,2023/2024,12
+3892854,50991.0,Nottingham Forest,45,,,,,,Center Forward,2023-10-29,England - Premier League,2023/2024,10
+3892791,3664.0,Liverpool,35,,,,,,Right Back,2023-09-03,England - Premier League,2023/2024,4
+3893056,4275.0,Luton Town,56,,,,,,Right Defensive Midfield,2024-04-03,England - Premier League,2023/2024,31
+3893037,25299.0,Brighton & Hove Albion,2,,,,,,Left Attacking Midfield,2024-04-25,England - Premier League,2023/2024,29
+3892982,3468.0,Everton,0,,,,,[20.4 49.6],Goalkeeper,2024-02-03,England - Premier League,2023/2024,23
+3892871,105392.0,Brighton & Hove Albion,52,,,,,,Left Wing,2023-11-12,England - Premier League,2023/2024,12
+3892874,9929.0,Liverpool,41,,,,,,Left Wing,2023-11-12,England - Premier League,2023/2024,12
+3892921,6331.0,Aston Villa,94,,,,,,Center Defensive Midfield,2023-12-17,England - Premier League,2023/2024,17
+3892994,5567.0,West Ham United,14,,,,,,Left Defensive Midfield,2024-02-11,England - Premier League,2023/2024,24
+3893051,50498.0,Tottenham Hotspur,18,,,,Success In Play,,Right Defensive Midfield,2024-03-30,England - Premier League,2023/2024,30
+3892762,29399.0,Chelsea,74,,,,,[91.1 42.1],Left Defensive Midfield,2023-08-13,England - Premier League,2023/2024,1
+3892867,9974.0,Aston Villa,80,,,,,,Right Attacking Midfield,2023-11-12,England - Premier League,2023/2024,12
+3892898,2954.0,Aston Villa,69,Incomplete,,,,,Center Attacking Midfield,2023-12-06,England - Premier League,2023/2024,15
+3893079,3097.0,Brighton & Hove Albion,64,,,,,,Left Defensive Midfield,2024-04-13,England - Premier League,2023/2024,33
+3892925,51672.0,Manchester United,47,,,,,[80.  74.4],Center Forward,2023-12-23,England - Premier League,2023/2024,18
+3892912,6590.0,AFC Bournemouth,5,,,,,[10.5 25.2],Goalkeeper,2023-12-09,England - Premier League,2023/2024,16
+3892939,7294.0,Brentford,52,,,,,,Right Wing,2023-12-27,England - Premier League,2023/2024,19
+3892799,20039.0,Manchester United,85,,,,,,Right Center Forward,2023-09-16,England - Premier League,2023/2024,5
+3892895,20572.0,Tottenham Hotspur,71,,,,,[91.7 49.7],Right Center Back,2023-12-07,England - Premier League,2023/2024,15
+3892986,5539.0,Manchester United,87,,,,,,Left Defensive Midfield,2024-02-11,England - Premier League,2023/2024,24
+3893088,9929.0,Liverpool,49,,,,,,Center Forward,2024-04-21,England - Premier League,2023/2024,34
+3893043,12111.0,Wolverhampton Wanderers,81,Incomplete,,,,,Left Midfield,2024-04-24,England - Premier League,2023/2024,29
+3892961,22347.0,Luton Town,45,Incomplete,,,,,Center Back,2024-01-12,England - Premier League,2023/2024,21
+3893127,3669.0,Liverpool,30,,,,,,Left Center Back,2024-05-19,England - Premier League,2023/2024,38
+3893132,4610.0,Brentford,29,,,,,,Left Center Back,2024-05-19,England - Premier League,2023/2024,38
+3892957,3495.0,Liverpool,17,,,,,,Left Back,2024-01-21,England - Premier League,2023/2024,21
+3892778,4610.0,Brentford,39,,,,,,Left Center Back,2023-08-26,England - Premier League,2023/2024,3
+3892840,5549.0,Manchester City,9,,,,,,Center Back,2023-10-21,England - Premier League,2023/2024,9
+3893059,49049.0,Fulham,34,,,,,,Center Forward,2024-04-02,England - Premier League,2023/2024,31
+3892838,37726.0,Chelsea,92,,,,,,Right Defensive Midfield,2023-10-21,England - Premier League,2023/2024,9
+3892858,52129.0,Manchester United,73,,,,,[107.7  17.4],Left Wing,2023-11-04,England - Premier League,2023/2024,11
+3893101,22818.0,Tottenham Hotspur,65,,,,,,Right Wing,2024-04-28,England - Premier League,2023/2024,35
+3892979,25000.0,Brentford,85,,,,,,Goalkeeper,2024-02-05,England - Premier League,2023/2024,23
+3892895,17033.0,West Ham United,80,,,,,[27.4 55.5],Center Forward,2023-12-07,England - Premier League,2023/2024,15
+3892765,9601.0,Brighton & Hove Albion,23,Incomplete,,,,,Right Center Back,2023-08-19,England - Premier League,2023/2024,2
+3892943,32762.0,Everton,47,,,,,[11.9 21.5],Left Center Back,2023-12-27,England - Premier League,2023/2024,19
+3892965,9000.0,Crystal Palace,21,,,,,,Right Center Midfield,2024-01-30,England - Premier League,2023/2024,22
+3893046,6574.0,Aston Villa,35,,,,,,Left Defensive Midfield,2024-03-30,England - Premier League,2023/2024,30
+3893027,39461.0,Chelsea,81,,,,,[68.3 41.4],Right Wing,2024-03-11,England - Premier League,2023/2024,28
+3893074,6849.0,Aston Villa,59,,,,,,Left Back,2024-04-06,England - Premier League,2023/2024,32
+3892845,3685.0,Burnley,51,,,,,[34.1 55.7],Center Forward,2023-10-28,England - Premier League,2023/2024,10
+3893074,6574.0,Aston Villa,21,Incomplete,,,,,Left Defensive Midfield,2024-04-06,England - Premier League,2023/2024,32
+3892762,3458.0,Chelsea,51,,,,,[113.    8.3],Left Wing Back,2023-08-13,England - Premier League,2023/2024,1
+3892979,3205.0,Manchester City,6,,,,,[18.1 61.9],Right Back,2024-02-05,England - Premier League,2023/2024,23
+3893114,16028.0,Manchester United,93,,,,,,Right Back,2024-05-06,England - Premier League,2023/2024,36
+3893026,24085.0,Brighton & Hove Albion,22,,,,,[64.6  7.8],Left Back,2024-03-10,England - Premier League,2023/2024,28
+3893078,15304.0,Sheffield United,21,,,,,[75.9 22.1],Right Center Midfield,2024-04-13,England - Premier League,2023/2024,33
+3892809,3458.0,Chelsea,76,,,,,[29.3 10.9],Left Midfield,2023-09-24,England - Premier League,2023/2024,6
+3924808,23741.0,Luton Town,97,,,,,[28.9 32.1],Goalkeeper,2024-03-13,England - Premier League,2023/2024,17
+3892841,28104.0,Newcastle United,43,,,,,,Left Wing,2023-10-21,England - Premier League,2023/2024,9
+3893025,9905.0,Tottenham Hotspur,59,,,,,,Center Attacking Midfield,2024-03-10,England - Premier League,2023/2024,28
+3892804,12425.0,Wolverhampton Wanderers,42,,,,,[116.8  20.5],Center Forward,2023-09-16,England - Premier League,2023/2024,5
+3893038,49702.0,Newcastle United,1,,,,,[74.2 55.4],Left Wing Back,2024-04-24,England - Premier League,2023/2024,29
+3892765,12111.0,Wolverhampton Wanderers,44,,,,,,Left Back,2023-08-19,England - Premier League,2023/2024,2
+3892876,5547.0,Liverpool,54,,,,,,Goalkeeper,2023-11-25,England - Premier League,2023/2024,13
+3893094,8292.0,Aston Villa,59,,,,,[92.   6.3],Center Attacking Midfield,2024-04-21,England - Premier League,2023/2024,34
+3892838,29976.0,Arsenal,52,,,,,[104.8  30.5],Left Wing,2023-10-21,England - Premier League,2023/2024,9
+3893043,6374.0,Wolverhampton Wanderers,61,,,,,,Right Back,2024-04-24,England - Premier League,2023/2024,29
+3893094,6892.0,Aston Villa,84,,,,,[55.4 11.4],Left Center Back,2024-04-21,England - Premier League,2023/2024,34
+3892815,8063.0,AFC Bournemouth,45,,,,,[37.9 65.3],Left Wing,2023-09-30,England - Premier League,2023/2024,7
+3892887,12149.0,West Ham United,82,,,,,[41.9 33.8],Left Center Back,2023-12-03,England - Premier League,2023/2024,14
+3893114,41437.0,Crystal Palace,27,,,,,[111.3  21.7],Left Wing Back,2024-05-06,England - Premier League,2023/2024,36
+3893020,20572.0,Tottenham Hotspur,74,,,,,,Right Center Back,2024-03-02,England - Premier League,2023/2024,27
+3893120,43779.0,Fulham,75,,,,,[33.8 25.1],Left Center Back,2024-05-11,England - Premier League,2023/2024,37
+3892908,33231.0,Liverpool,91,,,,,[22.9 10.1],Left Center Midfield,2023-12-09,England - Premier League,2023/2024,16
+3892985,3834.0,Brentford,21,,,,,[49.4 44.1],Right Center Forward,2024-02-10,England - Premier League,2023/2024,24
+3893089,12359.0,Sheffield United,15,,,,,[26.2 20.9],Left Center Back,2024-04-20,England - Premier League,2023/2024,34
+3892908,8489.0,Liverpool,87,,,,,,Left Back,2023-12-09,England - Premier League,2023/2024,16
+3892828,12352.0,Nottingham Forest,93,,,,,,Goalkeeper,2023-10-07,England - Premier League,2023/2024,8
+3892767,8966.0,Arsenal,23,,,,,,Left Center Midfield,2023-08-21,England - Premier League,2023/2024,2
+3892782,5539.0,Manchester United,63,,,,,,Right Defensive Midfield,2023-08-26,England - Premier League,2023/2024,3
+3892921,4433.0,Aston Villa,74,,,,,,Center Defensive Midfield,2023-12-17,England - Premier League,2023/2024,17
+3892897,24940.0,Wolverhampton Wanderers,14,,,,,,Right Center Back,2023-12-05,England - Premier League,2023/2024,15
+3893022,24467.0,Brentford,64,,,,,[56.6 58.6],Right Center Midfield,2024-03-02,England - Premier League,2023/2024,27
+3892869,12425.0,Wolverhampton Wanderers,65,Out,,,,,Left Center Forward,2023-11-11,England - Premier League,2023/2024,12
+3892859,4220.0,Luton Town,64,,,0.18488722,,,Center Forward,2023-11-05,England - Premier League,2023/2024,11
+3892996,5567.0,West Ham United,47,,,,,[57.  56.1],Left Defensive Midfield,2024-02-17,England - Premier League,2023/2024,25
+3892871,9601.0,Brighton & Hove Albion,19,,,,,[33.9 41. ],Right Center Back,2023-11-12,England - Premier League,2023/2024,12
+3892824,12425.0,Wolverhampton Wanderers,47,,Lost In Play,,,,Center Forward,2023-09-30,England - Premier League,2023/2024,7
+3893105,3083.0,Tottenham Hotspur,36,,,,,,Center Forward,2024-05-05,England - Premier League,2023/2024,36
+3893104,3088.0,Brighton & Hove Albion,97,,,,,,Right Center Back,2024-04-28,England - Premier League,2023/2024,35
+3893027,3864.0,Newcastle United,31,,,,,,Left Back,2024-03-11,England - Premier League,2023/2024,28
+3893093,4610.0,Brentford,32,,,,,,Left Center Back,2024-04-20,England - Premier League,2023/2024,34
+3892894,3570.0,Tottenham Hotspur,64,,,,,[ 9.6 41. ],Right Defensive Midfield,2023-12-03,England - Premier League,2023/2024,14
+3893058,12111.0,Wolverhampton Wanderers,59,,,,,,Left Attacking Midfield,2024-04-02,England - Premier League,2023/2024,31
+3892758,15581.0,Fulham,33,Incomplete,,,,,Goalkeeper,2023-08-12,England - Premier League,2023/2024,1
+3892830,3472.0,Fulham,71,,,,,[76.8  8.4],Left Wing,2023-10-07,England - Premier League,2023/2024,8
+3892802,4583.0,Sheffield United,103,,,,,,Right Center Back,2023-09-16,England - Premier League,2023/2024,5
+3892845,3685.0,Burnley,78,,,,,[25.9 65.3],Center Forward,2023-10-28,England - Premier League,2023/2024,10
+3892770,35471.0,Luton Town,52,,,,,,Right Back,2023-10-03,England - Premier League,2023/2024,2
+3893027,39260.0,Chelsea,55,,,,,[89.1 64.3],Right Back,2024-03-11,England - Premier League,2023/2024,28
+3892808,122567.0,Burnley,1,Incomplete,,,,,Right Center Midfield,2023-09-23,England - Premier League,2023/2024,6
+3892936,13306.0,Luton Town,78,,,,,[97.  73.9],Left Wing Back,2023-12-26,England - Premier League,2023/2024,19
+3892927,8214.0,Aston Villa,39,,,,,[103.4  68.9],Right Midfield,2023-12-22,England - Premier League,2023/2024,18
+3893046,34789.0,Wolverhampton Wanderers,43,,,,,,Right Defensive Midfield,2024-03-30,England - Premier League,2023/2024,30
+3892938,17592.0,Arsenal,21,,,,,,Right Center Back,2023-12-28,England - Premier League,2023/2024,19
+3892833,12603.0,Newcastle United,33,,,,,,Right Wing,2023-10-08,England - Premier League,2023/2024,8
+3892955,3205.0,Manchester City,57,,,,,,Right Back,2024-01-13,England - Premier League,2023/2024,21
+3893019,8966.0,Arsenal,66,,,,,,Center Forward,2024-03-04,England - Premier League,2023/2024,27
+3892976,2954.0,Aston Villa,29,,,,,,Center Attacking Midfield,2024-02-03,England - Premier League,2023/2024,23
+3893090,39615.0,Tottenham Hotspur,9,Incomplete,,,,,Left Center Back,2024-05-14,England - Premier League,2023/2024,34
+3893080,3612.0,Everton,95,,,,,,Right Midfield,2024-04-15,England - Premier League,2023/2024,33
+3892989,34959.0,Liverpool,75,,,,,,Goalkeeper,2024-02-10,England - Premier League,2023/2024,24
+3892929,151924.0,Burnley,49,,,,,,Left Midfield,2023-12-23,England - Premier League,2023/2024,18
+3892979,4610.0,Brentford,45,,,,,[57.6 71.6],Center Back,2024-02-05,England - Premier League,2023/2024,23
+3893019,4732.0,Sheffield United,23,,,,,[78.9  5.1],Right Center Midfield,2024-03-04,England - Premier League,2023/2024,27
+3893025,31225.0,Tottenham Hotspur,32,,,,,,Goalkeeper,2024-03-10,England - Premier League,2023/2024,28
+3892939,4610.0,Brentford,24,,,,,,Left Center Back,2023-12-27,England - Premier League,2023/2024,19
+3892955,12603.0,Newcastle United,14,,,,,,Right Wing,2024-01-13,England - Premier League,2023/2024,21
+3892986,4734.0,Aston Villa,30,,,,,[61.1 71.6],Right Back,2024-02-11,England - Premier League,2023/2024,24
+3892916,3086.0,Tottenham Hotspur,26,,,,,[ 8.2 57.6],Left Center Back,2023-12-15,England - Premier League,2023/2024,17
+3892936,3297.0,Luton Town,66,,,,,,Right Attacking Midfield,2023-12-26,England - Premier League,2023/2024,19
+3892784,3332.0,Sheffield United,76,,,0.038598932,,,Right Center Forward,2023-08-27,England - Premier League,2023/2024,3
+3893115,3711.0,Newcastle United,83,,,,,,Goalkeeper,2024-05-11,England - Premier League,2023/2024,37
+3892762,29399.0,Chelsea,58,,,,,[75.4  2.5],Left Defensive Midfield,2023-08-13,England - Premier League,2023/2024,1
+3892864,3233.0,Chelsea,83,,,,,,Left Wing,2023-11-06,England - Premier League,2023/2024,11
+3892811,9640.0,West Ham United,79,,,,,,Right Wing,2023-09-24,England - Premier League,2023/2024,6
+3892959,4274.0,Nottingham Forest,70,Incomplete,,,,,Left Midfield,2024-01-20,England - Premier League,2023/2024,21
+3892992,34339.0,Nottingham Forest,74,,,,,,Center Attacking Midfield,2024-02-10,England - Premier League,2023/2024,24
+3892917,3193.0,Manchester City,53,,,,,[102.1  77.2],Right Wing,2023-12-16,England - Premier League,2023/2024,17
+3892906,3822.0,Aston Villa,9,,,,,[ 5.  57.1],Right Back,2023-12-09,England - Premier League,2023/2024,16
+3892792,9640.0,West Ham United,67,,,,,[112.1  57.9],Right Wing,2023-09-01,England - Premier League,2023/2024,4
+3893005,39136.0,AFC Bournemouth,16,,,,,,Right Center Back,2024-02-24,England - Premier League,2023/2024,26
+3892836,9974.0,Aston Villa,10,,,,,,Right Midfield,2023-10-22,England - Premier League,2023/2024,9
+3893061,3628.0,Everton,62,,,,,,Right Center Back,2024-04-02,England - Premier League,2023/2024,31
+3892962,3472.0,Fulham,61,,,,,,Left Wing,2024-01-13,England - Premier League,2023/2024,21
+3892965,10485.0,Sheffield United,38,Incomplete,,,,,Left Center Back,2024-01-30,England - Premier League,2023/2024,22
+3892776,3313.0,Tottenham Hotspur,87,,,,,[35.6 25.5],Left Defensive Midfield,2023-08-26,England - Premier League,2023/2024,3
+3892871,4571.0,Sheffield United,39,,,,,[116.4  77.6],Right Center Back,2023-11-12,England - Premier League,2023/2024,12
+3893058,24940.0,Wolverhampton Wanderers,22,,,,,,Center Back,2024-04-02,England - Premier League,2023/2024,31
+3892945,9601.0,Brighton & Hove Albion,69,,,,,[63.3 61.6],Right Center Back,2024-01-02,England - Premier League,2023/2024,20
+3892881,8252.0,Arsenal,81,,,,,,Right Center Midfield,2023-11-25,England - Premier League,2023/2024,13
+3893046,12111.0,Wolverhampton Wanderers,8,,,,,[39.3  5.7],Left Wing Back,2024-03-30,England - Premier League,2023/2024,30
+3892939,9925.0,Wolverhampton Wanderers,64,,,,,[109.8  75.7],Right Wing Back,2023-12-27,England - Premier League,2023/2024,19
+3893121,214746.0,Sheffield United,61,,,,,,Center Defensive Midfield,2024-05-11,England - Premier League,2023/2024,37
+3893096,3468.0,Everton,37,,,,,,Goalkeeper,2024-04-27,England - Premier League,2023/2024,35
+3893050,23625.0,Everton,15,Incomplete,,,,,Left Defensive Midfield,2024-03-30,England - Premier League,2023/2024,30
+3893096,3834.0,Brentford,78,Incomplete,,,,,Center Forward,2024-04-27,England - Premier League,2023/2024,35
