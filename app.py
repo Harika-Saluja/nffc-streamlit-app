@@ -68,3 +68,43 @@ else:
 
 st.markdown("---")
 #st.caption("Step 1: Player bio with sidebar selector")
+
+# ---------------------------------------------------------
+# PERFORMANCE TREND (placeholder)
+# ---------------------------------------------------------
+st.markdown("---")
+st.header("Performance Trend")
+st.write("*(Graph will be added here in the next step)*")
+st.empty()  # clean placeholder space
+
+# ---------------------------------------------------------
+# VERDICT SUMMARY (4 hypotheses)
+# ---------------------------------------------------------
+st.markdown("---")
+st.header("🧠 Verdict Summary")
+
+st.write("### Hypothesis 1: Adaptation Tax")
+st.write("*(Result will be added here)*")
+
+st.write("### Transfer Timing")
+st.write("*(Result will be added here)*")
+
+st.write("### Hypothesis 3: Age Optimization")
+st.write("*(Result will be added here)*")
+
+st.write("### Hypothesis 4: Squad Balance")
+st.write("*(Result will be added here)*")
+
+# ---------------------------------------------------------
+# PERFECT SIGNING SCORE (placeholder)
+# ---------------------------------------------------------
+st.markdown("---")
+st.header("Perfect Signing Score")
+st.write("*(Gauge chart will be added here)*")
+st.empty()
+
+# ---------------------------------------------------------
+# Footer
+# ---------------------------------------------------------
+st.markdown("---")
+st.caption("Step 2: Added Performance Trend, Verdict Summary, and Perfect Signing Score placeholders.")
