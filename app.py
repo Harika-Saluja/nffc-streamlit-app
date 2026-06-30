@@ -2,25 +2,23 @@ import streamlit as st
 import duckdb
 import os
 
-# ---------------------------------------------------------
-# SAFETY CHECK — MUST BE AT THE TOP
-# ---------------------------------------------------------
 st.title("Player Profile Dashboard")
 
-db_path = "nffc.duckdb"
+# ---------------------------------------------------------
+# Connect to in-memory DuckDB and load Parquet files
+# ---------------------------------------------------------
+con = duckdb.connect(database=':memory:')
 
-# If file is missing
-if not os.path.exists(db_path):
-    st.error("❌ Database file not found in the deployed app.")
-    st.stop()
+# Load all Parquet files
+con.execute("""
+    CREATE TABLE lineups AS SELECT * FROM read_parquet('lineups.parquet');
+    CREATE TABLE events AS SELECT * FROM read_parquet('events.parquet');
+    CREATE TABLE matches AS SELECT * FROM read_parquet('matches.parquet');
+    CREATE TABLE injuries AS SELECT * FROM read_parquet('injuries.parquet');
+    CREATE TABLE catapult AS SELECT * FROM read_parquet('catapult.parquet');
+""")
 
-# If file exists but cannot be opened
-try:
-    con = duckdb.connect(db_path)
-except Exception as e:
-    st.error(f"❌ Could not open DuckDB file: {e}")
-    st.info("This usually happens because the file is too large for Streamlit Cloud.")
-    st.stop()
+st.success("✅ Parquet files loaded successfully!")
 
 # ---------------------------------------------------------
 # Sidebar – Player Selector
