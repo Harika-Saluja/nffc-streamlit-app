@@ -6,7 +6,7 @@ import duckdb
 # -------------------------------
 st.set_page_config(page_title="Player Profile Dashboard", layout="wide")
 
-st.title("Player Profile Dashboard")
+st.title("Player Profile")
 
 # -------------------------------
 # Load data (lineups only for now)
@@ -32,7 +32,7 @@ player_name = st.sidebar.selectbox("Select Player", players["player_name"])
 player_id = int(players.loc[players["player_name"] == player_name, "player_id"].iloc[0])
 
 st.markdown("---")
-st.header(f"Player Profile — {player_name}")
+st.header(f"{player_name}")
 
 # -------------------------------
 # Player bio (nice layout)
