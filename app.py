@@ -20,6 +20,10 @@ con.execute("""
 
 st.success("✅ Parquet files loaded successfully!")
 
+st.write("✅ Tables loaded successfully!")
+st.write("Lineups columns:", con.execute("DESCRIBE lineups").df())
+
+
 # ---------------------------------------------------------
 # Sidebar – Player Selector
 # ---------------------------------------------------------
