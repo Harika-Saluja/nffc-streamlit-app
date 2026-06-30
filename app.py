@@ -53,8 +53,8 @@ else:
     with col1:
         st.subheader("Basic Information")
         st.write(f"**Player ID:** {int(bio['player_id'].iloc[0])}")
-        st.write(f"**Name:** {bio['player_name'].iloc[0]}")
-        st.write(f"**Nickname:** {bio['player_nickname'].iloc[0]}")
+        #st.write(f"**Name:** {bio['player_name'].iloc[0]}")
+        #st.write(f"**Nickname:** {bio['player_nickname'].iloc[0]}")
         st.write(f"**Birth Date:** {bio['birth_date'].iloc[0]}")
         st.write(f"**Gender:** {bio['player_gender'].iloc[0]}")
         st.write(f"**Country:** {bio['country'].iloc[0]}")
