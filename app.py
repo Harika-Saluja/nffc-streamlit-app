@@ -2,6 +2,9 @@ import streamlit as st
 import duckdb
 import plotly.graph_objects as go
 
+# ---------------------------------------------------------
+# Page setup
+# ---------------------------------------------------------
 st.set_page_config(page_title="Player Profile Dashboard", layout="wide")
 st.title("Player Profile Dashboard")
 
@@ -19,7 +22,6 @@ con.execute("""
 """)
 
 st.success("✅ Parquet files loaded successfully!")
-st.write("Lineups columns:", con.execute("DESCRIBE lineups").df())
 
 # ---------------------------------------------------------
 # Sidebar – Player Selector
@@ -36,7 +38,7 @@ player_id = int(players.loc[players["player_name"] == player_name, "player_id"].
 st.title(f"Player Profile — {player_name}")
 
 # ---------------------------------------------------------
-# Player Bio
+# Player Bio (formatted)
 # ---------------------------------------------------------
 bio = con.execute(f"""
     SELECT player_id, player_name, birth_date, formations
@@ -45,24 +47,44 @@ bio = con.execute(f"""
     LIMIT 1
 """).df()
 
-st.subheader("Player Bio")
-st.write(bio)
+st.subheader("🧍 Player Bio")
+
+if not bio.empty:
+    bio_data = {
+        "Player ID": int(bio["player_id"].iloc[0]),
+        "Name": bio["player_name"].iloc[0],
+        "Birth Date": bio["birth_date"].iloc[0],
+        "Formation": bio["formations"].iloc[0]
+    }
+    for key, value in bio_data.items():
+        st.write(f"**{key}:** {value}")
+else:
+    st.info("No bio data available.")
 
 # ---------------------------------------------------------
 # Injury History
 # ---------------------------------------------------------
+inj_cols = [col[0] for col in con.execute("DESCRIBE injuries").fetchall()]
+id_col = "player_id" if "player_id" in inj_cols else "athlete_id"
+
 inj = con.execute(f"""
     SELECT reason, days_missed, games_missed, "from", "until"
     FROM injuries
-    WHERE player_id = {player_id}
+    WHERE {id_col} = {player_id}
 """).df()
 
 st.subheader("🩺 Injury History")
-st.dataframe(inj) if not inj.empty else st.info("No recorded injuries.")
+if not inj.empty:
+    st.dataframe(inj)
+else:
+    st.info("No recorded injuries.")
 
 # ---------------------------------------------------------
 # Technical Performance (Events)
 # ---------------------------------------------------------
+event_cols = [col[0] for col in con.execute("DESCRIBE events").fetchall()]
+id_col_events = "player_id" if "player_id" in event_cols else "athlete_id"
+
 tech = con.execute(f"""
     SELECT
         AVG(pass_pass_success_probability) AS pass_success,
@@ -70,7 +92,7 @@ tech = con.execute(f"""
         SUM(counterpress) AS counterpress_actions,
         SUM(interception_outcome) AS interceptions
     FROM events
-    WHERE player_id = {player_id}
+    WHERE {id_col_events} = {player_id}
 """).df()
 
 st.subheader("🎯 Technical Performance")
@@ -79,6 +101,9 @@ st.write(tech)
 # ---------------------------------------------------------
 # Physical Metrics (Catapult)
 # ---------------------------------------------------------
+phys_cols = [col[0] for col in con.execute("DESCRIBE catapult").fetchall()]
+id_col_phys = "athlete_id" if "athlete_id" in phys_cols else "player_id"
+
 phys = con.execute(f"""
     SELECT
         AVG(v) AS avg_speed,
@@ -87,7 +112,7 @@ phys = con.execute(f"""
         AVG(hr) AS avg_hr,
         AVG(mp) AS avg_metabolic_power
     FROM catapult
-    WHERE athlete_id = {player_id}
+    WHERE {id_col_phys} = {player_id}
 """).df()
 
 st.subheader("📊 Physical Metrics")
@@ -108,7 +133,7 @@ recent = con.execute(f"""
         SUM(e.interception_outcome) AS interceptions
     FROM matches m
     LEFT JOIN events e ON m.match_id = e.match_id
-    WHERE e.player_id = {player_id}
+    WHERE e.{id_col_events} = {player_id}
     GROUP BY m.match_id, m.home_team, m.away_team, m.match_date
     ORDER BY m.match_date DESC
     LIMIT 5
@@ -120,11 +145,10 @@ st.dataframe(recent)
 # ---------------------------------------------------------
 # Radar Chart
 # ---------------------------------------------------------
-# Handle None values safely
 def safe_float(x):
     try:
         return float(x)
-    except:
+    except Exception:
         return 0.0
 
 radar_metrics = {
@@ -147,3 +171,9 @@ fig.update_layout(showlegend=False, title=f"Player Radar — {player_name}")
 
 st.subheader("📈 Player Radar Chart")
 st.plotly_chart(fig)
+
+# ---------------------------------------------------------
+# Footer
+# ---------------------------------------------------------
+st.markdown("---")
+st.caption("Player Profile Dashboard © 2026 — Built with Streamlit + DuckDB + Parquet")
