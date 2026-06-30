@@ -51,7 +51,7 @@ else:
     col1, col2 = st.columns(2)
 
     with col1:
-        st.subheader("Basic Information")
+        #st.subheader("Basic Information")
         st.write(f"**Player ID:** {int(bio['player_id'].iloc[0])}")
         #st.write(f"**Name:** {bio['player_name'].iloc[0]}")
         #st.write(f"**Nickname:** {bio['player_nickname'].iloc[0]}")
@@ -60,7 +60,7 @@ else:
         st.write(f"**Country:** {bio['country'].iloc[0]}")
 
     with col2:
-        st.subheader("Physical & Squad Info")
+        #st.subheader("Physical & Squad Info")
         st.write(f"**Height:** {bio['player_height'].iloc[0]} cm")
         st.write(f"**Weight:** {bio['player_weight'].iloc[0]} kg")
         st.write(f"**Jersey Number:** {bio['jersey_number'].iloc[0]}")
