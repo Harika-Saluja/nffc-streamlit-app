@@ -64,7 +64,7 @@ else:
         st.write(f"**Height:** {bio['player_height'].iloc[0]} cm")
         st.write(f"**Weight:** {bio['player_weight'].iloc[0]} kg")
         st.write(f"**Jersey Number:** {bio['jersey_number'].iloc[0]}")
-        st.write(f"**Formation:** {bio['formations'].iloc[0]}")
+        #st.write(f"**Formation:** {bio['formations'].iloc[0]}")
 
 st.markdown("---")
-st.caption("Step 1: Player bio with sidebar selector")
+#st.caption("Step 1: Player bio with sidebar selector")
