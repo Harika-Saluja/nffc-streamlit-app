@@ -1,5 +1,6 @@
 import streamlit as st
 import duckdb
+import pandas as pd
 import plotly.express as px
 
 # -------------------------------
@@ -82,7 +83,8 @@ injury_days = con.execute(f"""
 
 col1, col2, col3 = st.columns(3)
 col1.metric("Matches Played", int(summary["matches_played"].iloc[0]))
-col2.metric("Minutes Played", int(summary["total_minutes"].iloc[0] or 0))
+minutes_val = summary["total_minutes"].iloc[0]
+col2.metric("Minutes Played", int(minutes_val) if pd.notna(minutes_val) else 0)
 col3.metric("Injury Days", int(injury_days["injury_days"].iloc[0]))
 
 # ---------------------------------------------------------
@@ -104,15 +106,16 @@ tech = con.execute(f"""
     WHERE player_id = {player_id}
 """).df()
 
-if tech["total_events"].iloc[0] is None or tech["total_events"].iloc[0] == 0:
+if pd.isna(tech["total_events"].iloc[0]) or tech["total_events"].iloc[0] == 0:
     st.info("No aggregated event data available for this player.")
 else:
-    pass_pct = (f"{tech['avg_pass_success'].iloc[0]:.0%}"
-                if tech["avg_pass_success"].iloc[0] is not None else "—")
+    avg_pass = tech["avg_pass_success"].iloc[0]
+    pass_pct = f"{avg_pass:.0%}" if pd.notna(avg_pass) else "—"
+    total_xg = tech["total_xg"].iloc[0]
 
     col1, col2, col3 = st.columns(3)
     col1.metric("Total Events", int(tech["total_events"].iloc[0]))
-    col2.metric("Total xG", round(tech["total_xg"].iloc[0] or 0, 2))
+    col2.metric("Total xG", round(total_xg, 2) if pd.notna(total_xg) else 0)
     col3.metric("Avg Pass Success", pass_pct)
 
 # ---------------------------------------------------------
@@ -140,7 +143,7 @@ physical = con.execute(f"""
     WHERE x.statsbomb_player_id = {player_id}
 """).df()
 
-if physical["sl_sum_avg"].iloc[0] is None:
+if pd.isna(physical["sl_sum_avg"].iloc[0]):
     st.info("No Catapult data available for this player "
             "(either no sessions recorded, or no identity match "
             "in identity_crosswalk.parquet).")
