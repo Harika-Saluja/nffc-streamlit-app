@@ -36,9 +36,9 @@ st.markdown("---")
 st.header(f"Myth Verdict Summary for {player_name}")
 
 # ---------------------------------------------------------
-# HYPOTHESIS 1 – ADAPTATION TAX
+# HYPOTHESIS 1 – LEAGUE ADAPTATION
 # ---------------------------------------------------------
-st.subheader("Hypothesis 1: Adaptation Tax")
+st.subheader("Hypothesis 1: League Adaptation")
 st.write("**Verdict Gauge (placeholder)**")
 st.empty()
 
@@ -51,9 +51,9 @@ st.empty()
 st.markdown("---")
 
 # ---------------------------------------------------------
-# HYPOTHESIS 2 – TRANSFER TIMING
+# HYPOTHESIS 2 – WORKLOAD & INJURY RISK
 # ---------------------------------------------------------
-st.subheader("Hypothesis 2: Transfer Timing")
+st.subheader("Hypothesis 2: Workload & Injury Risk")
 st.write("**Verdict Gauge (placeholder)**")
 st.empty()
 
