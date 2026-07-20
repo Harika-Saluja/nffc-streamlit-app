@@ -15,9 +15,12 @@ st.title("Player Profile")
 con = duckdb.connect(database=':memory:')
 
 con.execute("""
-    CREATE TABLE lineups AS SELECT * FROM read_parquet('lineups.parquet');
-    CREATE TABLE matches AS SELECT * FROM read_parquet('matches.parquet');
-    CREATE TABLE events  AS SELECT * FROM read_parquet('events.parquet');
+    CREATE TABLE lineups  AS SELECT * FROM read_parquet('lineups.parquet');
+    CREATE TABLE matches  AS SELECT * FROM read_parquet('matches.parquet');
+    CREATE TABLE events   AS SELECT * FROM read_parquet('events.parquet');
+    CREATE TABLE injuries AS SELECT * FROM read_parquet('injuries.parquet');
+    CREATE TABLE crosswalk AS SELECT * FROM read_parquet('identity_crosswalk.parquet');
+    CREATE TABLE catapult AS SELECT * FROM read_parquet('catapult.parquet');
 """)
 
 # -------------------------------
@@ -56,6 +59,99 @@ else:
         st.write(f"**Birth Date:** {bio['birth_date'].iloc[0]}")
     with col2:
         st.write(f"**Team:** {bio['team_name'].iloc[0]}")
+
+# ---------------------------------------------------------
+# PLAYER SUMMARY
+# ---------------------------------------------------------
+st.markdown("---")
+st.subheader("Player Summary")
+
+summary = con.execute(f"""
+    SELECT
+        COUNT(DISTINCT match_id) AS matches_played,
+        SUM(minutes_played) AS total_minutes
+    FROM lineups
+    WHERE player_id = {player_id}
+""").df()
+
+injury_days = con.execute(f"""
+    SELECT COALESCE(SUM(days_missed), 0) AS injury_days
+    FROM injuries
+    WHERE statsbomb_id = {player_id}
+""").df()
+
+col1, col2, col3 = st.columns(3)
+col1.metric("Matches Played", int(summary["matches_played"].iloc[0]))
+col2.metric("Minutes Played", int(summary["total_minutes"].iloc[0] or 0))
+col3.metric("Injury Days", int(injury_days["injury_days"].iloc[0]))
+
+# ---------------------------------------------------------
+# TECHNICAL PERFORMANCE
+# Uses the CURRENT events.parquet schema as-built
+# (event_count, xg_sum, pass_success_mean) — no pass/shot/
+# defensive-action breakdown, since that needs a rebuild
+# we're intentionally not doing right now.
+# ---------------------------------------------------------
+st.markdown("---")
+st.subheader("Technical Performance")
+
+tech = con.execute(f"""
+    SELECT
+        SUM(event_count) AS total_events,
+        SUM(xg_sum) AS total_xg,
+        AVG(pass_success_mean) AS avg_pass_success
+    FROM events
+    WHERE player_id = {player_id}
+""").df()
+
+if tech["total_events"].iloc[0] is None or tech["total_events"].iloc[0] == 0:
+    st.info("No aggregated event data available for this player.")
+else:
+    pass_pct = (f"{tech['avg_pass_success'].iloc[0]:.0%}"
+                if tech["avg_pass_success"].iloc[0] is not None else "—")
+
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Total Events", int(tech["total_events"].iloc[0]))
+    col2.metric("Total xG", round(tech["total_xg"].iloc[0] or 0, 2))
+    col3.metric("Avg Pass Success", pass_pct)
+
+# ---------------------------------------------------------
+# PHYSICAL LOAD (Catapult)
+# IMPORTANT: catapult.parquet does not contain a verified
+# "distance in metres" column — the x/y position fields were
+# dropped during the build. hr/pl/sl/v/a are best-guess
+# Catapult abbreviations (heart rate, player load, sprint
+# load/distance, velocity, acceleration) NOT yet confirmed
+# against Catapult's own data dictionary. Labeled honestly
+# below rather than presented as verified metric units.
+# Joins via identity_crosswalk since Catapult's athlete_id
+# has no direct relationship to StatsBomb's player_id.
+# ---------------------------------------------------------
+st.markdown("---")
+st.subheader("Physical Load (Catapult)")
+
+physical = con.execute(f"""
+    SELECT
+        AVG(hr_max)  AS hr_max_avg,
+        AVG(sl_sum)  AS sl_sum_avg,
+        AVG(a_sum)   AS a_sum_avg
+    FROM catapult c
+    JOIN crosswalk x ON c.athlete_id = x.athlete_id
+    WHERE x.statsbomb_player_id = {player_id}
+""").df()
+
+if physical["sl_sum_avg"].iloc[0] is None:
+    st.info("No Catapult data available for this player "
+            "(either no sessions recorded, or no identity match "
+            "in identity_crosswalk.parquet).")
+else:
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Avg Max Heart Rate", round(physical["hr_max_avg"].iloc[0], 1))
+    col2.metric("Avg Sprint Load (sl)*", round(physical["sl_sum_avg"].iloc[0], 1))
+    col3.metric("Avg Acceleration Load (a)*", round(physical["a_sum_avg"].iloc[0], 3))
+    st.caption("*Column meanings inferred from Catapult naming conventions, "
+               "not yet confirmed against official documentation — treat as "
+               "relative/comparative, not verified absolute units.")
 
 # ---------------------------------------------------------
 # PERFORMANCE TREND
