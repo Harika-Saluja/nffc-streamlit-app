@@ -380,3 +380,32 @@ else:
         f"estimate — a real limitation on how precisely individual baselines "
         f"are known, worth stating in any write-up of this result."
     )
+
+# ===========================================================
+# SAVE VERDICT — so the Myth Verdict page can read this
+# result without recomputing it. Guards against either test
+# having been skipped (insufficient data) above.
+# ===========================================================
+import json
+from datetime import datetime, timezone
+
+verdict_record = {
+    "hypothesis": "H1 — League Adaptation",
+    "metric": label,
+    "test_1": {
+        "name": "Mann-Whitney U (New vs. Established Players)",
+        "p_value": float(u_pval) if "u_pval" in dir() else None,
+        "effect_size": float(rank_biserial) if "rank_biserial" in dir() else None,
+        "verdict": verdict1 if "verdict1" in dir() else "NOT COMPUTED",
+    },
+    "test_2": {
+        "name": "Mixed-Effects Regression (Debut vs. Own Later Seasons)",
+        "p_value": float(debut_pval) if "debut_pval" in dir() else None,
+        "coefficient": float(debut_coef) if "debut_coef" in dir() else None,
+        "verdict": verdict2 if "verdict2" in dir() else "NOT COMPUTED",
+    },
+    "last_computed": datetime.now(timezone.utc).isoformat(),
+}
+
+with open("verdict_h1.json", "w") as f:
+    json.dump(verdict_record, f, indent=2)

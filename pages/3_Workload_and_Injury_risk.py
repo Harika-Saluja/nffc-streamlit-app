@@ -377,3 +377,33 @@ st.caption(
     "differences in baseline injury risk (e.g. a mixed/random-effects "
     "logistic model would); treat this as a first-pass population estimate."
 )
+
+# ===========================================================
+# SAVE VERDICT — so the Myth Verdict page can read this
+# result without recomputing it.
+# ===========================================================
+import json
+from datetime import datetime, timezone
+
+verdict_record = {
+    "hypothesis": "H2 — Workload & Injury Risk",
+    "metric": test_metric_choice,
+    "window_days": WINDOW_DAYS,
+    "follow_days": FOLLOW_DAYS,
+    "test_1": {
+        "name": "Mann-Whitney U (Pre-Injury vs. Normal Windows)",
+        "p_value": float(u_pval),
+        "effect_size": float(rank_biserial),
+        "verdict": verdict1,
+    },
+    "test_2": {
+        "name": "Logistic Regression (Odds of Injury by Load)",
+        "significant_predictors": summary_df[summary_df["pval"] < 0.05].index.tolist(),
+        "odds_ratios": summary_df["odds_ratio"].round(4).to_dict(),
+        "verdict": verdict2,
+    },
+    "last_computed": datetime.now(timezone.utc).isoformat(),
+}
+
+with open("verdict_h2.json", "w") as f:
+    json.dump(verdict_record, f, indent=2)

@@ -234,3 +234,36 @@ st.caption(
     "a reasonable next step if this result needs to hold up to scrutiny. "
     "Treat this as a first-pass population estimate of the peak."
 )
+
+# ===========================================================
+# SAVE VERDICT — so the Myth Verdict page can read this
+# result without recomputing it. Guards against Test 1 having
+# been skipped above (insufficient data across buckets).
+# ===========================================================
+import json
+from datetime import datetime, timezone
+
+verdict_record = {
+    "hypothesis": "H3 — Age Optimization",
+    "metric": label,
+    "test_1": {
+        "name": "Kruskal-Wallis + Dunn's Post-Hoc (Age Buckets)",
+        "kruskal_wallis_p_value": float(kw_pval) if "kw_pval" in dir() else None,
+        "best_bucket": best_bucket if "best_bucket" in dir() else None,
+        "verdict": (
+            "SIGNIFICANT DIFFERENCE EXISTS" if "kw_pval" in dir() and kw_pval < 0.05
+            else "NO SIGNIFICANT DIFFERENCE" if "kw_pval" in dir()
+            else "NOT COMPUTED"
+        ),
+    },
+    "test_2": {
+        "name": "Quadratic Regression (Peak Age)",
+        "estimated_peak_age": float(peak_age) if peak_age is not None else None,
+        "falls_in_24_27_range": bool(in_2427_range),
+        "shape": "Peaks then declines" if is_downward_parabola else "No clear peak",
+    },
+    "last_computed": datetime.now(timezone.utc).isoformat(),
+}
+
+with open("verdict_h3.json", "w") as f:
+    json.dump(verdict_record, f, indent=2)
