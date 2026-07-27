@@ -58,6 +58,21 @@ raw["age_at_match"] = (raw["match_date"] - raw["birth_date"]).dt.days / 365.25
 raw["xg_90"] = raw["xg_sum"] / raw["minutes_played"] * 90
 raw["events_90"] = raw["event_count"] / raw["minutes_played"] * 90
 
+# -------------------------------
+# Sidebar – player selector, for personalization on the scatter
+# plot below. Everything else on this page is population-level
+# (bucket comparison, quadratic regression) — the selector only
+# marks where this one player currently sits on that curve.
+# -------------------------------
+st.sidebar.title("Player Selector")
+
+players = raw[["player_id", "player_name"]].drop_duplicates().sort_values("player_name")
+player_name = st.sidebar.selectbox("Select Player", players["player_name"])
+player_id = int(players.loc[players["player_name"] == player_name, "player_id"].iloc[0])
+
+st.markdown("---")
+st.header(player_name)
+
 raw = raw.dropna(subset=["age_at_match"])
 raw = raw[(raw["age_at_match"] >= 15) & (raw["age_at_match"] <= 45)]  # sanity bounds
 
@@ -201,22 +216,42 @@ fitted_curve = poly(age_range)
 scatter_fig = go.Figure()
 scatter_fig.add_trace(go.Scatter(
     x=X, y=y, mode="markers", marker=dict(size=4, color="steelblue", opacity=0.2),
-    name="Player-matches",
+    name="All player-matches",
 ))
 scatter_fig.add_trace(go.Scatter(
     x=age_range, y=fitted_curve, mode="lines",
     line=dict(color="crimson", width=3), name="Fitted quadratic curve",
 ))
+
+# highlight the selected player's own matches among the population
+player_points = reg_data[reg_data["player_id"] == player_id]
+if not player_points.empty:
+    scatter_fig.add_trace(go.Scatter(
+        x=player_points["age_at_match"], y=player_points[col],
+        mode="markers", marker=dict(size=10, color="gold", line=dict(width=1, color="black")),
+        name=f"{player_name}'s matches",
+    ))
+
 if peak_age is not None and X.min() <= peak_age <= X.max():
     scatter_fig.add_vline(
-        x=peak_age, line_dash="dash", line_color="gold",
+        x=peak_age, line_dash="dash", line_color="gray",
         annotation_text=f"Model peak: age {peak_age:.1f}",
     )
 scatter_fig.update_layout(
-    title=f"{label} vs. age — fitted peak from the data",
+    title=f"{label} vs. age — fitted peak from the data (gold = {player_name})",
     xaxis_title="Age at match", yaxis_title=label,
 )
 st.plotly_chart(scatter_fig, use_container_width=True)
+
+if player_points.empty:
+    st.caption(f"{player_name} has no eligible matches (45+ minutes) for this metric.")
+else:
+    current_age = player_points["age_at_match"].max()
+    st.caption(
+        f"{player_name}'s most recent tracked age in this data: {current_age:.1f}. "
+        f"Their matches are highlighted in gold above, against the full-population "
+        f"fitted curve."
+    )
 
 is_downward_parabola = c < 0
 in_2427_range = peak_age is not None and 24 <= peak_age <= 27
