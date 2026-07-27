@@ -1,6 +1,8 @@
 import streamlit as st
+import duckdb
 import json
 import os
+import pandas as pd
 from datetime import datetime
 
 # ---------------------------------------------------------
@@ -9,10 +11,10 @@ from datetime import datetime
 st.set_page_config(page_title="Myth Verdict Dashboard", layout="wide")
 st.title("Myth Verdict Dashboard")
 st.caption(
-    "Pulls the real, already-computed statistical results from each "
-    "hypothesis's own page. If a hypothesis shows 'Not yet computed', "
-    "visit that page first — visiting it runs the tests and saves the "
-    "result here automatically."
+    "Population-level verdicts are pulled from each hypothesis page's own "
+    "saved results. If a hypothesis shows 'Not yet computed', visit that "
+    "page first. Select a player below to see how they specifically fit "
+    "into each verdict."
 )
 
 BADGE = {"SUPPORTED": "🔴", "NOT SUPPORTED": "🟢", "INCONCLUSIVE": "🟡",
@@ -41,6 +43,30 @@ def render_timestamp(record: dict):
         dt = datetime.fromisoformat(ts)
         st.caption(f"Last computed: {dt.strftime('%Y-%m-%d %H:%M UTC')}")
 
+
+# -------------------------------
+# Sidebar – player selector. Population verdicts above don't
+# change per player, but each hypothesis gets a small "in this
+# player's case" callout pulled fresh from the underlying data,
+# since the saved verdict JSONs only hold population results.
+# -------------------------------
+con = duckdb.connect(database=':memory:')
+con.execute("""
+    CREATE TABLE lineups AS SELECT * FROM read_parquet('lineups.parquet');
+    CREATE TABLE matches AS SELECT * FROM read_parquet('matches.parquet');
+    CREATE TABLE events  AS SELECT * FROM read_parquet('events.parquet');
+    CREATE TABLE injuries AS SELECT * FROM read_parquet('injuries.parquet');
+""")
+
+st.sidebar.title("Player Selector")
+players = con.execute("""
+    SELECT DISTINCT player_id, player_name FROM lineups ORDER BY player_name
+""").df()
+player_name = st.sidebar.selectbox("Select Player", players["player_name"])
+player_id = int(players.loc[players["player_name"] == player_name, "player_id"].iloc[0])
+
+st.markdown("---")
+st.header(f"Myth Verdict Summary for {player_name}")
 
 # ---------------------------------------------------------
 # HYPOTHESIS 1 – LEAGUE ADAPTATION
@@ -72,6 +98,34 @@ else:
 
     render_timestamp(h1)
 
+# per-player context: was this player ever "new" in the dataset?
+player_seasons = con.execute(f"""
+    SELECT m.season, COUNT(DISTINCT l.match_id) AS matches_played
+    FROM lineups l JOIN matches m ON l.match_id = m.match_id
+    WHERE l.player_id = {player_id}
+    GROUP BY m.season ORDER BY m.season
+""").df()
+
+if player_seasons.empty:
+    st.caption(f"No season data found for {player_name}.")
+else:
+    debut_season = player_seasons["season"].min()
+    all_seasons_in_data = con.execute("SELECT MIN(season) AS s FROM matches").df()["s"].iloc[0]
+    if debut_season == all_seasons_in_data:
+        st.caption(
+            f"📍 **In {player_name}'s case:** their earliest tracked season is "
+            f"{debut_season} — the first season in our dataset, so we can't "
+            f"confirm this is genuinely their PL debut (left-censored, see "
+            f"the League Adaptation page for detail)."
+        )
+    else:
+        st.caption(
+            f"📍 **In {player_name}'s case:** first tracked season is "
+            f"{debut_season} — flagged as a debut season. See the League "
+            f"Adaptation page, selecting this player, for their specific "
+            f"before/after comparison."
+        )
+
 st.markdown("---")
 
 # ---------------------------------------------------------
@@ -102,6 +156,24 @@ else:
         st.json(t2["odds_ratios"], expanded=False)
 
     render_timestamp(h2)
+
+# per-player context: injury history flag
+player_injuries = con.execute(f"""
+    SELECT COUNT(*) AS n_injuries, COALESCE(SUM(days_missed), 0) AS total_days
+    FROM injuries WHERE statsbomb_id = {player_id}
+""").df()
+n_inj = int(player_injuries["n_injuries"].iloc[0])
+
+if n_inj == 0:
+    st.caption(f"📍 **In {player_name}'s case:** no injury records in our dataset.")
+else:
+    total_days = int(player_injuries["total_days"].iloc[0])
+    st.caption(
+        f"📍 **In {player_name}'s case:** {n_inj} injury record(s), "
+        f"{total_days} total days missed. See the Workload & Injury Risk "
+        f"page, selecting this player, for their specific load trend "
+        f"around each injury."
+    )
 
 st.markdown("---")
 
@@ -141,6 +213,37 @@ else:
 
     render_timestamp(h3)
 
+    # per-player context: which bucket does this player currently fall into?
+    player_age_row = con.execute(f"""
+        SELECT MAX(m.match_date) AS latest_match, l.birth_date
+        FROM lineups l JOIN matches m ON l.match_id = m.match_id
+        WHERE l.player_id = {player_id}
+        GROUP BY l.birth_date
+    """).df()
+
+    if not player_age_row.empty and pd.notna(player_age_row["birth_date"].iloc[0]):
+        latest = pd.to_datetime(player_age_row["latest_match"].iloc[0])
+        birth = pd.to_datetime(player_age_row["birth_date"].iloc[0])
+        current_age = (latest - birth).days / 365.25
+
+        BUCKET_EDGES = [15, 21, 24, 28, 32, 45]
+        BUCKET_LABELS = ["≤20", "21-23", "24-27", "28-31", "32+"]
+        player_bucket = pd.cut([current_age], bins=BUCKET_EDGES, labels=BUCKET_LABELS, right=False)[0]
+
+        best_bucket = t1.get("best_bucket")
+        is_best = player_bucket == best_bucket
+        bucket_note = (
+            "This is the population's best-performing bucket. ✅" if is_best
+            else f"The best-performing bucket is {best_bucket}, not this one."
+        )
+
+        st.caption(
+            f"📍 **In {player_name}'s case:** age {current_age:.1f} at their most "
+            f"recent match — falls in the **{player_bucket}** bucket. {bucket_note}"
+        )
+    else:
+        st.caption(f"No age data available for {player_name}.")
+
 st.markdown("---")
 
 # ---------------------------------------------------------
@@ -158,7 +261,9 @@ st.markdown("---")
 # FOOTER
 # ---------------------------------------------------------
 st.caption(
-    "Verdicts are pulled live from each hypothesis page's own saved "
-    "results — refresh this page after revisiting H1/H2/H3 to see "
-    "updated numbers if you've changed any sliders or settings there."
+    "Population verdicts are pulled live from each hypothesis page's own "
+    "saved results — refresh after revisiting H1/H2/H3 to see updated "
+    "numbers if you've changed any sliders there. Per-player context "
+    "(📍 callouts) is computed fresh on this page for whichever player "
+    "is selected in the sidebar."
 )
