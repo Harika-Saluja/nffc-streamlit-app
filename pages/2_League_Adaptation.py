@@ -117,14 +117,17 @@ col, label = metric_map[metric_choice]
 
 colors = ["crimson" if new else "steelblue" for new in player_data["is_new_season"]]
 
-fig = go.Figure(go.Bar(
+fig = go.Figure(go.Scatter(
     x=player_data["season"], y=player_data[col],
-    marker_color=colors,
+    mode="lines+markers",
+    line=dict(color="steelblue", width=2),
+    marker=dict(size=14, color=colors, line=dict(width=1, color="white")),
     text=[f"{v:.2f}" if pd.notna(v) else "—" for v in player_data[col]],
-    textposition="outside",
+    textposition="top center",
+    texttemplate="%{text}",
 ))
 fig.update_layout(
-    title=f"{player_name} — {label} by season (red = first PL season, per scope note above)",
+    title=f"{player_name} — {label} by season (red marker = first PL season, per scope note above)",
     xaxis_title="Season", yaxis_title=label,
 )
 st.plotly_chart(fig, use_container_width=True)
