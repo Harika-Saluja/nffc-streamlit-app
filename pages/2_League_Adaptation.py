@@ -1,8 +1,12 @@
 import streamlit as st
 import duckdb
 import pandas as pd
+import numpy as np
 import plotly.graph_objects as go
 from scipy import stats
+import statsmodels.formula.api as smf
+import json
+from datetime import datetime, timezone
 
 # -------------------------------
 # Page config
@@ -10,20 +14,17 @@ from scipy import stats
 st.set_page_config(page_title="League Adaptation", layout="wide")
 st.title("League Adaptation")
 st.caption(
-    "H1: Players new to the Premier League show a measurable dip in "
-    "performance in their first season compared to established players."
+    "H1: Players new to the league show a measurable dip in performance "
+    "in their first season compared to established players."
 )
 
 st.warning(
-    "**Scope note:** the current dataset only covers the Premier League "
-    "(2022-23 to 2024-25), not the other top-5 leagues StatsBomb has "
-    "available. This page can identify players who are NEW to the PL "
-    "within our dataset window — it cannot confirm which league they "
-    "came from, so this is a proxy for 'league adaptation', not a "
-    "verified foreign-transfer indicator. A player's first tracked "
-    "season (2022-23) is excluded from the 'new' flag, since we can't "
-    "tell whether they're a genuine debutant or simply outside our "
-    "data window (left-censoring)."
+    "**Scope note:** with the multi-league rebuild, this dataset now covers "
+    "all 5 top European leagues (Premier League, La Liga, Serie A, "
+    "1. Bundesliga, Ligue 1), so 'new' here can reflect a genuine cross-"
+    "league transfer. A player's first tracked season (2022-23) is still "
+    "excluded from the 'new' flag, since we can't tell whether they're a "
+    "genuine debutant or simply outside our data window (left-censoring)."
 )
 
 # -------------------------------
@@ -44,7 +45,7 @@ player_seasons = con.execute("""
     WITH per_match AS (
         SELECT
             l.player_id, l.player_name, l.match_id, l.minutes_played,
-            m.season, m.match_date,
+            m.season, m.match_date, m.competition,
             COALESCE(e.xg_sum, 0) AS xg_sum,
             e.pass_success_mean,
             COALESCE(e.event_count, 0) AS event_count
@@ -63,7 +64,6 @@ player_seasons = con.execute("""
     GROUP BY player_id, player_name, season
 """).df()
 
-# per-90 metrics (guard against 0 minutes)
 player_seasons["xg_90"] = player_seasons.apply(
     lambda r: (r["xg_total"] / r["minutes"] * 90) if r["minutes"] > 0 else None, axis=1
 )
@@ -71,19 +71,17 @@ player_seasons["events_90"] = player_seasons.apply(
     lambda r: (r["events_total"] / r["minutes"] * 90) if r["minutes"] > 0 else None, axis=1
 )
 
-# each player's first tracked season, and whether this season is "new"
 first_season = player_seasons.groupby("player_id")["season"].min().rename("first_season")
 player_seasons = player_seasons.merge(first_season, on="player_id")
 
-EARLIEST_DATASET_SEASON = player_seasons["season"].min()  # left-censoring guard
+EARLIEST_DATASET_SEASON = player_seasons["season"].min()
 player_seasons["is_new_season"] = (
     (player_seasons["season"] == player_seasons["first_season"])
     & (player_seasons["first_season"] != EARLIEST_DATASET_SEASON)
 )
 
 # -------------------------------
-# Sidebar – only players who have a valid "new season" flag are
-# interesting for this page, but allow anyone for comparison
+# Sidebar – full player roster
 # -------------------------------
 st.sidebar.title("Player Selector")
 
@@ -101,7 +99,7 @@ if player_data.empty:
     st.stop()
 
 # -------------------------------
-# Per-season trend, first/new season highlighted
+# Per-season trend, first/new season highlighted (LINE CHART)
 # -------------------------------
 st.subheader("Performance by Season")
 
@@ -127,7 +125,7 @@ fig = go.Figure(go.Scatter(
     texttemplate="%{text}",
 ))
 fig.update_layout(
-    title=f"{player_name} — {label} by season (red marker = first PL season, per scope note above)",
+    title=f"{player_name} — {label} by season (red marker = first season, per scope note above)",
     xaxis_title="Season", yaxis_title=label,
 )
 st.plotly_chart(fig, use_container_width=True)
@@ -137,14 +135,13 @@ if not player_data["is_new_season"].any():
         st.info(
             f"{player_name}'s first tracked season is {EARLIEST_DATASET_SEASON} — "
             f"the earliest season in our dataset, so we can't confirm this is "
-            f"genuinely their first PL season (left-censored)."
+            f"genuinely their first season (left-censored)."
         )
     else:
         st.info(f"{player_name} has no flagged 'new' season in this window.")
 
 # -------------------------------
-# Population comparison: new-season players vs. established players,
-# for whichever season the selected player's "new" season falls in
+# Population comparison: new-season players vs. established players
 # -------------------------------
 new_rows = player_data[player_data["is_new_season"]]
 
@@ -155,7 +152,7 @@ if not new_rows.empty:
     target_season = new_rows["season"].iloc[0]
     cohort = player_seasons[
         (player_seasons["season"] == target_season) & (player_seasons["minutes"] >= 90)
-    ]  # require at least one full match's worth of minutes to reduce noise
+    ]
 
     new_avg = cohort[cohort["is_new_season"]][col].mean()
     established_avg = cohort[~cohort["is_new_season"]][col].mean()
@@ -177,18 +174,10 @@ if not new_rows.empty:
         f"'New players' = players whose first tracked season is {target_season} "
         f"(excludes {EARLIEST_DATASET_SEASON} debutants, per scope note). "
         f"Minimum 90 minutes played to reduce small-sample noise. This is a "
-        f"single-season snapshot, not the full statistical test — the formal "
-        f"H1 verdict (significance test across all seasons/players) should be "
-        f"computed separately and shown on the Myth Verdict page."
+        f"single-season snapshot, not the full statistical test — see below "
+        f"for the pooled, population-level verdict."
     )
 
-    # -------------------------------
-    # Own-season comparison: THIS player's debut season vs. THIS
-    # player's own later seasons. Different question from the group
-    # comparison above — "did new signings underperform vets league-
-    # wide" vs. "did this specific player improve after debut". A
-    # within-player (paired) comparison, not a between-player one.
-    # -------------------------------
     later_seasons = player_data[player_data["season"] > target_season]
 
     if later_seasons.empty:
@@ -219,28 +208,17 @@ if not new_rows.empty:
 
         if delta is not None:
             direction = "improved" if delta > 0 else "declined"
-            st.metric(
-                f"Change from debut to later seasons ({direction})",
-                f"{delta:+.2f}",
-            )
+            st.metric(f"Change from debut to later seasons ({direction})", f"{delta:+.2f}")
 
         st.caption(
             "This is a within-player (paired) comparison — this specific "
             "player's own debut-season number against the average of their "
-            "own later seasons. Different from the group chart above, which "
-            "compares different players to each other within one season. "
-            "The population-level version of this comparison (paired across "
-            "every player who has both a debut and later season) uses a "
-            "Wilcoxon signed-rank test — more statistically powerful than "
-            "the group comparison, since it controls for each player's own "
-            "baseline ability rather than comparing unrelated players."
+            "own later seasons. The population-level version uses mixed-"
+            "effects regression, shown below."
         )
 
 # ===========================================================
 # STATISTICAL VERDICT — H1, pooled across ALL players/seasons
-# (not just the selected player's context above). This is the
-# real test; everything above this point is single-player
-# exploration to build intuition first.
 # ===========================================================
 st.markdown("---")
 st.header("H1 Statistical Verdict (All Players, Pooled)")
@@ -248,21 +226,23 @@ st.header("H1 Statistical Verdict (All Players, Pooled)")
 eligible = player_seasons[player_seasons["minutes"] >= 90].dropna(subset=[col])
 
 # -----------------------------------------------------------
-# Test 1: Mann-Whitney U — new players (independent group)
-# vs. established players (independent group), pooled across
-# every season in the dataset.
+# Test 1: Mann-Whitney U — new players vs. established players
 # -----------------------------------------------------------
 st.subheader("Test 1 — New vs. Established Players (Mann-Whitney U)")
 
 new_group = eligible[eligible["is_new_season"]][col]
 established_group = eligible[~eligible["is_new_season"]][col]
 
+verdict1 = "NOT COMPUTED"
+u_pval = None
+rank_biserial = None
+
 if len(new_group) < 5 or len(established_group) < 5:
     st.info("Not enough data in one or both groups to run this test reliably.")
 else:
     u_stat, u_pval = stats.mannwhitneyu(new_group, established_group, alternative="two-sided")
     n1, n2 = len(new_group), len(established_group)
-    rank_biserial = 1 - (2 * u_stat) / (n1 * n2)  # effect size, -1 to 1
+    rank_biserial = 1 - (2 * u_stat) / (n1 * n2)
 
     box_fig = go.Figure()
     box_fig.add_trace(go.Box(y=new_group, name=f"New (n={n1})", marker_color="crimson"))
@@ -282,42 +262,35 @@ else:
     st.caption(
         "p < 0.05 and a negative effect size means new players' distribution "
         "sits significantly lower than established players' — consistent with "
-        "H1. A negative effect size that isn't significant, or a p-value ≥ 0.05, "
-        "means the data doesn't support a real gap."
+        "H1. Note: with a large sample, statistical significance doesn't "
+        "guarantee practical significance — check the effect size magnitude too."
     )
 
 # -----------------------------------------------------------
-# Test 2: Mixed-effects regression — uses EVERY eligible season
-# row per player (not collapsed into one "later average"), with
-# a random intercept per player to control for each player's
-# own baseline ability before estimating the debut-season effect.
-# Model: metric ~ is_new_season + (1 | player_id)
+# Test 2: Mixed-effects regression — debut season effect,
+# controlling for each player's own baseline via random intercept
 # -----------------------------------------------------------
 st.subheader("Test 2 — Debut Season Effect (Mixed-Effects Regression)")
 
-import statsmodels.formula.api as smf
-
-# only players with 2+ eligible seasons contribute meaningfully
-# to the random-intercept estimate — same requirement the paired
-# test had, just checked per-player rather than pre-collapsed
 season_counts = eligible.groupby("player_id")["season"].transform("count")
 model_data = eligible[season_counts >= 2].copy()
 model_data["is_new_season_int"] = model_data["is_new_season"].astype(int)
+
+verdict2 = "NOT COMPUTED"
+debut_pval = None
+debut_coef = None
 
 if model_data["player_id"].nunique() < 10:
     st.info("Not enough players with 2+ eligible seasons to fit this model reliably.")
 else:
     mixed_model = smf.mixedlm(
-        f"{col} ~ is_new_season_int",
-        data=model_data,
-        groups=model_data["player_id"],
+        f"{col} ~ is_new_season_int", data=model_data, groups=model_data["player_id"]
     ).fit()
 
     debut_coef = mixed_model.params["is_new_season_int"]
     debut_pval = mixed_model.pvalues["is_new_season_int"]
     ci_low, ci_high = mixed_model.conf_int().loc["is_new_season_int"]
 
-    # forest plot: single estimate + 95% CI whiskers
     forest_fig = go.Figure()
     forest_fig.add_trace(go.Scatter(
         x=[debut_coef], y=["Debut season effect"],
@@ -332,8 +305,6 @@ else:
     )
     st.plotly_chart(forest_fig, use_container_width=True)
 
-    # per-player trajectories: real season on x-axis, debut point
-    # marked distinctly, selected player highlighted
     sample_ids = model_data["player_id"].drop_duplicates().sample(
         min(40, model_data["player_id"].nunique()), random_state=0
     )
@@ -374,41 +345,278 @@ else:
 
     st.caption(
         f"n={model_data['player_id'].nunique()} players with 2+ eligible seasons "
-        f"({len(model_data)} player-season rows total). The coefficient is the "
-        f"model's estimate of how much lower (if negative) a player's {label} is "
-        f"in their debut season specifically, after accounting for each player's "
-        f"own baseline ability via the random intercept. A negative, significant "
-        f"coefficient supports H1. Note: with only 3 seasons of data, most "
-        f"players contribute at most 1-2 'later' seasons to their own baseline "
-        f"estimate — a real limitation on how precisely individual baselines "
-        f"are known, worth stating in any write-up of this result."
+        f"({len(model_data)} player-season rows total). Negative, significant "
+        f"coefficient supports H1. With only 3 seasons of data, most players "
+        f"contribute at most 1-2 'later' seasons to their own baseline estimate."
     )
 
 # ===========================================================
-# SAVE VERDICT — so the Myth Verdict page can read this
-# result without recomputing it. Guards against either test
-# having been skipped (insufficient data) above.
+# SAVE VERDICT
 # ===========================================================
-import json
-from datetime import datetime, timezone
-
 verdict_record = {
     "hypothesis": "H1 — League Adaptation",
     "metric": label,
     "test_1": {
         "name": "Mann-Whitney U (New vs. Established Players)",
-        "p_value": float(u_pval) if "u_pval" in dir() else None,
-        "effect_size": float(rank_biserial) if "rank_biserial" in dir() else None,
-        "verdict": verdict1 if "verdict1" in dir() else "NOT COMPUTED",
+        "p_value": float(u_pval) if u_pval is not None else None,
+        "effect_size": float(rank_biserial) if rank_biserial is not None else None,
+        "verdict": verdict1,
     },
     "test_2": {
         "name": "Mixed-Effects Regression (Debut vs. Own Later Seasons)",
-        "p_value": float(debut_pval) if "debut_pval" in dir() else None,
-        "coefficient": float(debut_coef) if "debut_coef" in dir() else None,
-        "verdict": verdict2 if "verdict2" in dir() else "NOT COMPUTED",
+        "p_value": float(debut_pval) if debut_pval is not None else None,
+        "coefficient": float(debut_coef) if debut_coef is not None else None,
+        "verdict": verdict2,
     },
     "last_computed": datetime.now(timezone.utc).isoformat(),
 }
 
 with open("verdict_h1.json", "w") as f:
     json.dump(verdict_record, f, indent=2)
+
+# ===========================================================
+# TRANSFER CONTEXT — lightweight exploratory extension, NOT a
+# replication of Dinsdale & Gallagher (2022) "Transfer Portal" or
+# Hong et al. (2025/26) "EventGPT". Those papers need infrastructure
+# this project doesn't have (a global Elo-style league/team rating
+# system trained on years of results, actual transfer-date records,
+# or raw sequential event data with coordinates for a trained
+# transformer's player embeddings). This section borrows their
+# FOUR-FACTOR FRAMING and the IDEA of vector-based player similarity,
+# built from data already available here — proxies, not replicas.
+#
+#   Paper's factor              -> Our proxy
+#   Playing style difference    -> per-90 (xG, pass%, events) as a
+#                                   simple 3-value "style vector",
+#                                   compared via cosine similarity
+#   Teammate/team ability       -> team points-per-game that season
+#   League quality/style        -> league-wide average per-90 output
+#                                   that season (NOT a true Elo rating)
+#   Desired role                -> primary_position match/mismatch
+# ===========================================================
+st.markdown("---")
+st.header("Transfer Context (Lightweight Extension)")
+st.warning(
+    "**This is a lightweight, differently-scoped extension** inspired by "
+    "the four-factor framing in Dinsdale & Gallagher (2022) 'Transfer "
+    "Portal' and the player-embedding idea in Hong et al. (2025/26) "
+    "'EventGPT' — not a replication of either. Both papers require "
+    "infrastructure (a global Elo-style rating system, real transfer "
+    "dates, or raw sequential event data for a trained transformer) "
+    "that doesn't exist in this project's data. The 'league quality' "
+    "score below is a rough per-90 output proxy, NOT a validated "
+    "strength rating like Transfer Portal's Elo system — treat it as "
+    "illustrative, not authoritative."
+)
+
+# --- detect a REAL cross-league move for the selected player ---
+player_leagues = con.execute(f"""
+    SELECT m.season, m.competition, COUNT(DISTINCT l.match_id) AS matches_played
+    FROM lineups l JOIN matches m ON l.match_id = m.match_id
+    WHERE l.player_id = {player_id}
+    GROUP BY m.season, m.competition
+    ORDER BY m.season
+""").df()
+
+league_switch = None
+if len(player_leagues) >= 2:
+    seasons_sorted = sorted(player_leagues["season"].unique())
+    for i in range(1, len(seasons_sorted)):
+        prev_leagues = set(player_leagues[player_leagues["season"] == seasons_sorted[i-1]]["competition"])
+        curr_leagues = set(player_leagues[player_leagues["season"] == seasons_sorted[i]]["competition"])
+        if prev_leagues and curr_leagues and not (prev_leagues & curr_leagues):
+            league_switch = {
+                "from_league": list(prev_leagues)[0],
+                "to_league": list(curr_leagues)[0],
+                "from_season": seasons_sorted[i-1],
+                "to_season": seasons_sorted[i],
+            }
+            break
+
+if league_switch is None:
+    st.info(
+        f"No detected cross-league move for {player_name} in this dataset "
+        f"— either they stayed in one league throughout, or their move "
+        f"happened outside the tracked seasons."
+    )
+else:
+    st.success(
+        f"**Detected move:** {league_switch['from_league']} "
+        f"({league_switch['from_season']}) → {league_switch['to_league']} "
+        f"({league_switch['to_season']})"
+    )
+
+    # --- performance change: last season in old league vs first in new ---
+    before = player_seasons[
+        (player_seasons["player_id"] == player_id)
+        & (player_seasons["season"] == league_switch["from_season"])
+    ]
+    after = player_seasons[
+        (player_seasons["player_id"] == player_id)
+        & (player_seasons["season"] == league_switch["to_season"])
+    ]
+
+    if not before.empty and not after.empty:
+        st.subheader("Performance Change After the Move")
+        before_val, after_val = before[col].iloc[0], after[col].iloc[0]
+        delta = after_val - before_val if pd.notna(before_val) and pd.notna(after_val) else None
+
+        move_fig = go.Figure(go.Bar(
+            x=[f"Before ({league_switch['from_league']})", f"After ({league_switch['to_league']})"],
+            y=[before_val, after_val],
+            marker_color=["steelblue", "crimson" if (delta or 0) < 0 else "seagreen"],
+            text=[f"{v:.2f}" if pd.notna(v) else "—" for v in [before_val, after_val]],
+            textposition="outside",
+        ))
+        move_fig.update_layout(title=f"{player_name} — {label}: before vs. after the move", yaxis_title=label)
+        st.plotly_chart(move_fig, use_container_width=True)
+
+        if delta is not None:
+            direction = "improved" if delta > 0 else "declined"
+            st.metric(f"Change ({direction})", f"{delta:+.2f}")
+
+    # --- four-factor breakdown ---
+    st.subheader("Four-Factor Breakdown")
+
+    # 1. Style similarity: cosine sim of (xg_90, pass_success_avg, events_90)
+    #    before vs. the new league's average that season
+    style_cols = ["xg_90", "pass_success_avg", "events_90"]
+    player_style = before[style_cols].iloc[0].fillna(0).values if not before.empty else None
+
+    league_avg_style = player_seasons[
+        player_seasons["season"] == league_switch["to_season"]
+    ][style_cols].mean().fillna(0).values
+
+    style_similarity = None
+    if player_style is not None and np.linalg.norm(player_style) > 0 and np.linalg.norm(league_avg_style) > 0:
+        style_similarity = float(
+            np.dot(player_style, league_avg_style)
+            / (np.linalg.norm(player_style) * np.linalg.norm(league_avg_style))
+        )
+
+    # 2. Team ability: points-per-game, old team vs new team
+    def team_ppg(player_id_, season_):
+        team_matches = con.execute(f"""
+            SELECT m.home_team, m.away_team, m.home_score, m.away_score, l.team_name
+            FROM lineups l JOIN matches m ON l.match_id = m.match_id
+            WHERE l.player_id = {player_id_} AND m.season = '{season_}'
+        """).df()
+        if team_matches.empty:
+            return None
+        points = []
+        for _, row in team_matches.iterrows():
+            if row["team_name"] == row["home_team"]:
+                gf, ga = row["home_score"], row["away_score"]
+            else:
+                gf, ga = row["away_score"], row["home_score"]
+            points.append(3 if gf > ga else (1 if gf == ga else 0))
+        return np.mean(points) if points else None
+
+    old_team_ppg = team_ppg(player_id, league_switch["from_season"])
+    new_team_ppg = team_ppg(player_id, league_switch["to_season"])
+
+    # 3. League quality proxy: league-wide average per-90 output that season
+    def league_quality(competition_, season_):
+        q = player_seasons[
+            (player_seasons["season"] == season_)
+        ]
+        # filter to players who appeared in that competition that season
+        comp_players = con.execute(f"""
+            SELECT DISTINCT l.player_id
+            FROM lineups l JOIN matches m ON l.match_id = m.match_id
+            WHERE m.competition = '{competition_}' AND m.season = '{season_}'
+        """).df()["player_id"]
+        q = q[q["player_id"].isin(comp_players)]
+        return q[col].mean() if not q.empty else None
+
+    old_league_quality = league_quality(league_switch["from_league"], league_switch["from_season"])
+    new_league_quality = league_quality(league_switch["to_league"], league_switch["to_season"])
+
+    # 4. Role/position consistency
+    old_position = con.execute(f"""
+        SELECT primary_position, COUNT(*) AS n FROM lineups l
+        JOIN matches m ON l.match_id = m.match_id
+        WHERE l.player_id = {player_id} AND m.season = '{league_switch['from_season']}'
+        GROUP BY primary_position ORDER BY n DESC LIMIT 1
+    """).df()
+    new_position = con.execute(f"""
+        SELECT primary_position, COUNT(*) AS n FROM lineups l
+        JOIN matches m ON l.match_id = m.match_id
+        WHERE l.player_id = {player_id} AND m.season = '{league_switch['to_season']}'
+        GROUP BY primary_position ORDER BY n DESC LIMIT 1
+    """).df()
+    old_pos_val = old_position["primary_position"].iloc[0] if not old_position.empty else None
+    new_pos_val = new_position["primary_position"].iloc[0] if not new_position.empty else None
+    same_position = old_pos_val == new_pos_val if old_pos_val and new_pos_val else None
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric(
+        "1. Style similarity",
+        f"{style_similarity:.2f}" if style_similarity is not None else "—",
+        help="Cosine similarity (0-1) between the player's own style vector "
+             "and the new league's average — higher means a more natural stylistic fit.",
+    )
+    c2.metric(
+        "2. Team ability (PPG)",
+        f"{old_team_ppg:.2f} → {new_team_ppg:.2f}" if old_team_ppg is not None and new_team_ppg is not None else "—",
+        help="Points-per-game of old team vs. new team that season.",
+    )
+    c3.metric(
+        "3. League quality (proxy)",
+        f"{old_league_quality:.2f} → {new_league_quality:.2f}" if old_league_quality is not None and new_league_quality is not None else "—",
+        help=f"League-wide average {label} — a rough proxy, not a validated strength rating.",
+    )
+    c4.metric(
+        "4. Same role?",
+        "Yes" if same_position else ("No" if same_position is not None else "—"),
+        help=f"{old_pos_val or '—'} → {new_pos_val or '—'}",
+    )
+
+    # --- recommended replacements: style-vector similarity within the
+    # OLD league/position, to suggest who could fill the departing
+    # player's role — borrows EventGPT's embedding-similarity IDEA,
+    # not its architecture (no transformer, no learned embeddings —
+    # just cosine similarity on the same 3-value per-90 style vector) ---
+    st.subheader(f"Suggested Replacements in {league_switch['from_league']}")
+
+    if old_pos_val is not None and player_style is not None:
+        candidates = con.execute(f"""
+            SELECT DISTINCT l.player_id, l.player_name
+            FROM lineups l JOIN matches m ON l.match_id = m.match_id
+            WHERE m.competition = '{league_switch['from_league']}'
+              AND m.season = '{league_switch['from_season']}'
+              AND l.primary_position = '{old_pos_val}'
+              AND l.player_id != {player_id}
+        """).df()
+
+        sims = []
+        for _, cand in candidates.iterrows():
+            cand_row = player_seasons[
+                (player_seasons["player_id"] == cand["player_id"])
+                & (player_seasons["season"] == league_switch["from_season"])
+            ]
+            if cand_row.empty:
+                continue
+            cand_style = cand_row[style_cols].iloc[0].fillna(0).values
+            if np.linalg.norm(cand_style) == 0:
+                continue
+            sim = float(
+                np.dot(player_style, cand_style)
+                / (np.linalg.norm(player_style) * np.linalg.norm(cand_style))
+            )
+            sims.append({"Player": cand["player_name"], "Style Similarity": round(sim, 3)})
+
+        if sims:
+            sims_df = pd.DataFrame(sims).sort_values("Style Similarity", ascending=False).head(5)
+            st.dataframe(sims_df, use_container_width=True, hide_index=True)
+            st.caption(
+                f"Top 5 players in the {old_pos_val} position, {league_switch['from_league']} "
+                f"{league_switch['from_season']}, ranked by style-vector similarity to "
+                f"{player_name} before their move. This is a simple cosine-similarity "
+                f"ranking on 3 per-90 stats — not a trained model — so treat it as a "
+                f"starting point for scouting, not a definitive recommendation."
+            )
+        else:
+            st.info("No comparable players found for a replacement suggestion.")
+    else:
+        st.info("Not enough data to suggest replacements for this player/season.")
