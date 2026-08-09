@@ -2,6 +2,7 @@ import streamlit as st
 import duckdb
 import pandas as pd
 import numpy as np
+import plotly.graph_objects as go
 
 # -------------------------------
 # Page config
@@ -267,3 +268,121 @@ st.caption(
     "and EventGPT's learned player embeddings both need infrastructure "
     "this project's data doesn't have."
 )
+
+# ===========================================================
+# PAPER-STYLE VISUAL PANELS
+# Mirrors Dinsdale & Gallagher (2022) Figure 1's four-panel layout,
+# adapted to what this project's data can actually support.
+# ===========================================================
+st.markdown("---")
+st.header("Detailed Move Analysis")
+
+all_metric_cols = ["xg_90", "pass_success_avg", "events_90"]
+all_metric_labels = {"xg_90": "xG / 90", "pass_success_avg": "Pass Success %", "events_90": "Events / 90"}
+
+panel_a, panel_c = st.columns([2, 1])
+
+# --- Panel (a): multi-metric % change, before vs after ---
+with panel_a:
+    st.subheader("(a) Predicted Player Performance Change")
+    if before.empty or after.empty:
+        st.info("Missing before/after data for this move.")
+    else:
+        pct_rows = []
+        for m in all_metric_cols:
+            b_val, a_val = before[m].iloc[0], after[m].iloc[0]
+            if pd.notna(b_val) and pd.notna(a_val) and b_val != 0:
+                pct_change = (a_val - b_val) / abs(b_val) * 100
+                pct_rows.append({"metric": all_metric_labels[m], "pct_change": pct_change})
+
+        if pct_rows:
+            pct_df = pd.DataFrame(pct_rows)
+            bar_colors = ["seagreen" if v >= 0 else "crimson" for v in pct_df["pct_change"]]
+            bar_fig = go.Figure(go.Bar(
+                x=pct_df["pct_change"], y=pct_df["metric"], orientation="h",
+                marker_color=bar_colors,
+                text=[f"{v:+.0f}%" for v in pct_df["pct_change"]],
+                textposition="outside",
+            ))
+            bar_fig.add_vline(x=0, line_color="gray")
+            bar_fig.update_layout(
+                title=f"{player_name} — predicted % change per metric",
+                xaxis_title="% change (before → after move)",
+                height=300,
+            )
+            st.plotly_chart(bar_fig, use_container_width=True)
+        else:
+            st.info("Not enough non-zero data to compute % change.")
+
+# --- Panel (c): RAG confidence based on data volume ---
+with panel_c:
+    st.subheader("(c) Data Confidence")
+
+    def rag_status(n_matches: int) -> tuple[str, str]:
+        if n_matches >= 15:
+            return "🟢", "Green"
+        elif n_matches >= 5:
+            return "🟡", "Amber"
+        else:
+            return "🔴", "Red"
+
+    player_matches_before = int(before["minutes"].count()) if not before.empty else 0
+    # count real matches (not aggregated rows) for the confidence check
+    player_n_matches = con.execute(f"""
+        SELECT COUNT(DISTINCT l.match_id) AS n FROM lineups l JOIN matches m ON l.match_id = m.match_id
+        WHERE l.player_id = {player_id} AND m.season = '{league_switch['from_season']}'
+    """).df()["n"].iloc[0]
+
+    old_league_n = con.execute(f"""
+        SELECT COUNT(DISTINCT match_id) AS n FROM matches
+        WHERE competition = '{league_switch['from_league']}' AND season = '{league_switch['from_season']}'
+    """).df()["n"].iloc[0]
+
+    new_league_n = con.execute(f"""
+        SELECT COUNT(DISTINCT match_id) AS n FROM matches
+        WHERE competition = '{league_switch['to_league']}' AND season = '{league_switch['to_season']}'
+    """).df()["n"].iloc[0]
+
+    for label_txt, n_val, threshold_note in [
+        (player_name, player_n_matches, "player's own matches this season"),
+        (league_switch["from_league"], old_league_n, "matches in origin league"),
+        (league_switch["to_league"], new_league_n, "matches in destination league"),
+    ]:
+        badge, status_word = rag_status(int(n_val))
+        st.write(f"{badge} **{label_txt}**")
+        st.caption(f"{int(n_val)} {threshold_note} — {status_word} confidence")
+
+# --- Panel (d): percentile vs. league distribution ---
+st.subheader("(d) Where This Player Sits vs. the New League")
+
+dist_data = player_seasons[
+    (player_seasons["season"] == league_switch["to_season"])
+    & (player_seasons["competition"] == league_switch["to_league"])
+][col].dropna()
+
+if len(dist_data) < 5 or after.empty:
+    st.info("Not enough players in the destination league/season to build a distribution.")
+else:
+    player_value = after[col].iloc[0]
+    if pd.notna(player_value):
+        percentile = float((dist_data < player_value).mean() * 100)
+
+        strip_fig = go.Figure()
+        strip_fig.add_trace(go.Box(
+            x=dist_data, name=league_switch["to_league"], boxpoints="all",
+            jitter=0.6, pointpos=0, marker_color="lightgray", line_color="lightgray",
+            fillcolor="rgba(0,0,0,0)",
+        ))
+        strip_fig.add_trace(go.Scatter(
+            x=[player_value], y=[league_switch["to_league"]],
+            mode="markers", marker=dict(size=16, color="crimson", symbol="diamond"),
+            name=player_name,
+        ))
+        strip_fig.update_layout(
+            title=f"{player_name} — {label} vs. all {league_switch['to_league']} players "
+                  f"({league_switch['to_season']}) — {percentile:.0f}th percentile",
+            xaxis_title=label, height=250, showlegend=True,
+        )
+        st.plotly_chart(strip_fig, use_container_width=True)
+    else:
+        st.info(f"{player_name} has no recorded {label} value after the move to compare.")
