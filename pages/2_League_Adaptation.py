@@ -280,88 +280,113 @@ verdict2 = "NOT COMPUTED"
 debut_pval = None
 debut_coef = None
 
+# BUGFIX: the original code only checked that there were >=10 players
+# in model_data, but never checked that `is_new_season_int` actually
+# varies within that filtered subset. Players who qualify for this
+# model need 2+ eligible seasons — and it's entirely possible (and, in
+# some season windows, likely) that none of the "new" flagged rows
+# survive that filter, leaving is_new_season_int constant at 0 for
+# every row. A constant predictor gives mixedlm a singular design
+# matrix, which raises an unhandled numpy.linalg.LinAlgError and
+# crashes the whole page. FIX: require both classes to be present
+# with a minimum count, and wrap the fit itself in try/except so a
+# convergence failure degrades to a message instead of a crash.
+class_counts = model_data["is_new_season_int"].value_counts()
+has_both_classes = len(class_counts) == 2 and class_counts.min() >= 5
+
 if model_data["player_id"].nunique() < 10:
     st.info("Not enough players with 2+ eligible seasons to fit this model reliably.")
+elif not has_both_classes:
+    st.info(
+        "Not enough players flagged as 'new' (with 2+ eligible seasons) in this "
+        "window to estimate a debut-season effect — the model needs both debut "
+        "and established rows to compare."
+    )
 else:
-    mixed_model = smf.mixedlm(
-        f"{col} ~ is_new_season_int", data=model_data, groups=model_data["player_id"]
-    ).fit()
+    mixed_model = None
+    try:
+        mixed_model = smf.mixedlm(
+            f"{col} ~ is_new_season_int", data=model_data, groups=model_data["player_id"]
+        ).fit()
+    except Exception as e:
+        st.info(f"The mixed-effects model failed to converge on this data slice ({e}).")
 
-    debut_coef = mixed_model.params["is_new_season_int"]
-    debut_pval = mixed_model.pvalues["is_new_season_int"]
-    ci_low, ci_high = mixed_model.conf_int().loc["is_new_season_int"]
+    if mixed_model is not None:
+        debut_coef = mixed_model.params["is_new_season_int"]
+        debut_pval = mixed_model.pvalues["is_new_season_int"]
+        ci_low, ci_high = mixed_model.conf_int().loc["is_new_season_int"]
 
-    forest_fig = go.Figure()
-    forest_fig.add_trace(go.Scatter(
-        x=[debut_coef], y=["Debut season effect"],
-        error_x=dict(type="data", symmetric=False,
-                     array=[ci_high - debut_coef], arrayminus=[debut_coef - ci_low]),
-        mode="markers", marker=dict(size=14, color="crimson"),
-    ))
-    forest_fig.add_vline(x=0, line_dash="dash", line_color="gray")
-    forest_fig.update_layout(
-        title=f"Estimated debut-season effect on {label} (95% CI)",
-        xaxis_title=f"Change in {label} vs. established seasons",
-    )
-    st.plotly_chart(forest_fig, use_container_width=True)
-
-    sample_ids = model_data["player_id"].drop_duplicates().sample(
-        min(40, model_data["player_id"].nunique()), random_state=0
-    )
-    # only force-add the selected player if they actually qualify for this
-    # model (2+ eligible seasons) — forcing in a player with zero rows in
-    # model_data causes an IndexError below when the chart tries to read
-    # their name from an empty dataframe
-    if player_id in model_data["player_id"].values and player_id not in sample_ids.values:
-        sample_ids = pd.concat([sample_ids, pd.Series([player_id])])
-
-    if player_id not in model_data["player_id"].values:
-        st.info(
-            f"{player_name} doesn't have 2+ eligible seasons, so they aren't "
-            f"part of this pooled model and won't appear (highlighted) in "
-            f"the trajectory chart below — it still shows the population."
-        )
-
-    traj_fig = go.Figure()
-    for pid in sample_ids:
-        p_rows = model_data[model_data["player_id"] == pid].sort_values("season")
-        if p_rows.empty:  # defensive: skip rather than crash on .iloc[0]
-            continue
-        is_selected = pid == player_id
-        traj_fig.add_trace(go.Scatter(
-            x=p_rows["season"], y=p_rows[col],
-            mode="lines+markers",
-            line=dict(color="gold" if is_selected else "gray", width=3 if is_selected else 1),
-            opacity=1.0 if is_selected else 0.3,
-            marker=dict(
-                size=[12 if new else 7 for new in p_rows["is_new_season"]],
-                symbol=["star" if new else "circle" for new in p_rows["is_new_season"]],
-            ),
-            name=p_rows["player_name"].iloc[0] if is_selected else "",
-            showlegend=is_selected,
-            hovertext=p_rows["player_name"].iloc[0],
+        forest_fig = go.Figure()
+        forest_fig.add_trace(go.Scatter(
+            x=[debut_coef], y=["Debut season effect"],
+            error_x=dict(type="data", symmetric=False,
+                         array=[ci_high - debut_coef], arrayminus=[debut_coef - ci_low]),
+            mode="markers", marker=dict(size=14, color="crimson"),
         ))
-    traj_fig.update_layout(
-        title=f"{label} by season, per player (★ = that player's debut season)",
-        xaxis_title="Season", yaxis_title=label, showlegend=True,
-    )
-    st.plotly_chart(traj_fig, use_container_width=True)
+        forest_fig.add_vline(x=0, line_dash="dash", line_color="gray")
+        forest_fig.update_layout(
+            title=f"Estimated debut-season effect on {label} (95% CI)",
+            xaxis_title=f"Change in {label} vs. established seasons",
+        )
+        st.plotly_chart(forest_fig, use_container_width=True)
 
-    verdict2 = "SUPPORTED" if debut_pval < 0.05 and debut_coef < 0 else (
-        "NOT SUPPORTED" if debut_pval < 0.05 else "INCONCLUSIVE")
-    badge_color2 = {"SUPPORTED": "🔴", "NOT SUPPORTED": "🟢", "INCONCLUSIVE": "🟡"}[verdict2]
+        sample_ids = model_data["player_id"].drop_duplicates().sample(
+            min(40, model_data["player_id"].nunique()), random_state=0
+        )
+        # only force-add the selected player if they actually qualify for this
+        # model (2+ eligible seasons) — forcing in a player with zero rows in
+        # model_data causes an IndexError below when the chart tries to read
+        # their name from an empty dataframe
+        if player_id in model_data["player_id"].values and player_id not in sample_ids.values:
+            sample_ids = pd.concat([sample_ids, pd.Series([player_id])])
 
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Coefficient (debut effect)", f"{debut_coef:+.3f}")
-    c2.metric("p-value", f"{debut_pval:.4f}")
-    c3.metric("Verdict", f"{badge_color2} {verdict2}")
+        if player_id not in model_data["player_id"].values:
+            st.info(
+                f"{player_name} doesn't have 2+ eligible seasons, so they aren't "
+                f"part of this pooled model and won't appear (highlighted) in "
+                f"the trajectory chart below — it still shows the population."
+            )
 
-    st.caption(
-        f"n={model_data['player_id'].nunique()} players with 2+ eligible seasons "
-        f"({len(model_data)} player-season rows total). Negative, significant "
-        f"coefficient supports H1. With only 3 seasons of data, most players "
-        f"contribute at most 1-2 'later' seasons to their own baseline estimate."
-    )
+        traj_fig = go.Figure()
+        for pid in sample_ids:
+            p_rows = model_data[model_data["player_id"] == pid].sort_values("season")
+            if p_rows.empty:  # defensive: skip rather than crash on .iloc[0]
+                continue
+            is_selected = pid == player_id
+            traj_fig.add_trace(go.Scatter(
+                x=p_rows["season"], y=p_rows[col],
+                mode="lines+markers",
+                line=dict(color="gold" if is_selected else "gray", width=3 if is_selected else 1),
+                opacity=1.0 if is_selected else 0.3,
+                marker=dict(
+                    size=[12 if new else 7 for new in p_rows["is_new_season"]],
+                    symbol=["star" if new else "circle" for new in p_rows["is_new_season"]],
+                ),
+                name=p_rows["player_name"].iloc[0] if is_selected else "",
+                showlegend=is_selected,
+                hovertext=p_rows["player_name"].iloc[0],
+            ))
+        traj_fig.update_layout(
+            title=f"{label} by season, per player (★ = that player's debut season)",
+            xaxis_title="Season", yaxis_title=label, showlegend=True,
+        )
+        st.plotly_chart(traj_fig, use_container_width=True)
+
+        verdict2 = "SUPPORTED" if debut_pval < 0.05 and debut_coef < 0 else (
+            "NOT SUPPORTED" if debut_pval < 0.05 else "INCONCLUSIVE")
+        badge_color2 = {"SUPPORTED": "🔴", "NOT SUPPORTED": "🟢", "INCONCLUSIVE": "🟡"}[verdict2]
+
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Coefficient (debut effect)", f"{debut_coef:+.3f}")
+        c2.metric("p-value", f"{debut_pval:.4f}")
+        c3.metric("Verdict", f"{badge_color2} {verdict2}")
+
+        st.caption(
+            f"n={model_data['player_id'].nunique()} players with 2+ eligible seasons "
+            f"({len(model_data)} player-season rows total). Negative, significant "
+            f"coefficient supports H1. With only 3 seasons of data, most players "
+            f"contribute at most 1-2 'later' seasons to their own baseline estimate."
+        )
 
 # ===========================================================
 # SAVE VERDICT
@@ -423,6 +448,19 @@ st.warning(
 )
 
 # --- detect a REAL cross-league move for the selected player ---
+# BUGFIX: the original version compared the *full set* of distinct
+# competitions a player appeared in each season. Any player who also
+# featured in a continental cup (e.g. UEFA Champions League) — or who
+# simply has a season with no domestic-league appearances recorded —
+# ends up with a competition set that doesn't overlap with the
+# adjacent season's, which the old code mistook for a "cross-league
+# move" even though the player never left their domestic league.
+# It also picked `list(some_set)[0]`, which is non-deterministic
+# (Python set/string-hash ordering isn't guaranteed) whenever a season
+# genuinely had more than one competition.
+# FIX: reduce each season down to a single "primary league" — the
+# competition with the most matches played that season — and compare
+# primary leagues season-to-season instead of raw competition sets.
 player_leagues = con.execute(f"""
     SELECT m.season, m.competition, COUNT(DISTINCT l.match_id) AS matches_played
     FROM lineups l JOIN matches m ON l.match_id = m.match_id
@@ -431,16 +469,33 @@ player_leagues = con.execute(f"""
     ORDER BY m.season
 """).df()
 
+# Taking the highest-match-count competition per season still misfires
+# if a season has ONLY cup/continental matches recorded (no domestic
+# league appearances at all that season, e.g. a data gap or a loan to
+# a reserve/cup side) — the cup competition would then "win" as the
+# only option. Exclude clearly non-domestic-league competitions by
+# name before picking a primary league; a season with nothing left
+# afterwards is treated as no usable data, not a false switch.
+_non_domestic_pattern = r"(?i)cup|champions league|europa|conference league|play-?off|super cup|shield"
+domestic_leagues = player_leagues[
+    ~player_leagues["competition"].str.contains(_non_domestic_pattern, regex=True, na=False)
+]
+
 league_switch = None
-if len(player_leagues) >= 2:
-    seasons_sorted = sorted(player_leagues["season"].unique())
+if len(domestic_leagues) >= 2 and domestic_leagues["season"].nunique() >= 2:
+    primary_league_by_season = (
+        domestic_leagues.sort_values("matches_played", ascending=False)
+        .drop_duplicates(subset=["season"], keep="first")
+        .set_index("season")["competition"]
+    )
+    seasons_sorted = sorted(primary_league_by_season.index)
     for i in range(1, len(seasons_sorted)):
-        prev_leagues = set(player_leagues[player_leagues["season"] == seasons_sorted[i-1]]["competition"])
-        curr_leagues = set(player_leagues[player_leagues["season"] == seasons_sorted[i]]["competition"])
-        if prev_leagues and curr_leagues and not (prev_leagues & curr_leagues):
+        prev_league = primary_league_by_season[seasons_sorted[i - 1]]
+        curr_league = primary_league_by_season[seasons_sorted[i]]
+        if prev_league != curr_league:
             league_switch = {
-                "from_league": list(prev_leagues)[0],
-                "to_league": list(curr_leagues)[0],
+                "from_league": prev_league,
+                "to_league": curr_league,
                 "from_season": seasons_sorted[i-1],
                 "to_season": seasons_sorted[i],
             }
@@ -562,21 +617,26 @@ else:
     new_pos_val = new_position["primary_position"].iloc[0] if not new_position.empty else None
     same_position = old_pos_val == new_pos_val if old_pos_val and new_pos_val else None
 
+    # BUGFIX: `.mean()` on an all-NaN slice (e.g. a season with no
+    # recorded events data for a given metric) returns NaN, not None.
+    # The original `is not None` checks let NaN through, so the metric
+    # rendered the literal string "nan" instead of the intended "—"
+    # placeholder. Use pd.notna(), which treats NaN as missing too.
     c1, c2, c3, c4 = st.columns(4)
     c1.metric(
         "1. Style similarity",
-        f"{style_similarity:.2f}" if style_similarity is not None else "—",
+        f"{style_similarity:.2f}" if pd.notna(style_similarity) else "—",
         help="Cosine similarity (0-1) between the player's own style vector "
              "and the new league's average — higher means a more natural stylistic fit.",
     )
     c2.metric(
         "2. Team ability (PPG)",
-        f"{old_team_ppg:.2f} → {new_team_ppg:.2f}" if old_team_ppg is not None and new_team_ppg is not None else "—",
+        f"{old_team_ppg:.2f} → {new_team_ppg:.2f}" if pd.notna(old_team_ppg) and pd.notna(new_team_ppg) else "—",
         help="Points-per-game of old team vs. new team that season.",
     )
     c3.metric(
         "3. League quality (proxy)",
-        f"{old_league_quality:.2f} → {new_league_quality:.2f}" if old_league_quality is not None and new_league_quality is not None else "—",
+        f"{old_league_quality:.2f} → {new_league_quality:.2f}" if pd.notna(old_league_quality) and pd.notna(new_league_quality) else "—",
         help=f"League-wide average {label} — a rough proxy, not a validated strength rating.",
     )
     c4.metric(
