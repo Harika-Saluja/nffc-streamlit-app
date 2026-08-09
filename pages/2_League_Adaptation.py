@@ -69,15 +69,23 @@ player_seasons["events_90"] = np.where(
     np.nan,
 )
 
-metric_choice = st.radio(
-    "Metric:", ["xG per 90", "Pass Success %", "Events per 90"], horizontal=True
-)
+# NOTE: the metric selector used to live here and quietly drove two
+# unrelated things further down the page (Factor 3's "league quality"
+# number and Panel d's percentile chart) while three other sections
+# (Panel a, Factors 1/2/4) always used all three metrics regardless.
+# It's been moved down to sit directly above Panel (d), the only place
+# it now controls — see that section for the widget itself.
 metric_map = {
     "xG per 90": ("xg_90", "xG / 90"),
     "Pass Success %": ("pass_success_avg", "Pass success (mean probability)"),
     "Events per 90": ("events_90", "Events / 90"),
 }
-col, label = metric_map[metric_choice]
+# Factor 3 ("league quality") is part of the fixed four-factor
+# breakdown, not something the reader should be able to toggle, so it
+# now uses a fixed metric rather than following the (now page-scoped)
+# selector. xG/90 is the most directly interpretable attacking-output
+# proxy for "how strong is this league" among the three options.
+QUALITY_METRIC_COL, QUALITY_METRIC_LABEL = metric_map["xG per 90"]
 
 # -------------------------------
 # Sidebar – full player roster
@@ -204,7 +212,7 @@ def league_quality(competition: str, season: str):
     q = player_seasons[
         (player_seasons["season"] == season) & (player_seasons["player_id"].isin(comp_players))
     ]
-    return float(q[col].mean()) if not q.empty and q[col].notna().any() else None
+    return float(q[QUALITY_METRIC_COL].mean()) if not q.empty and q[QUALITY_METRIC_COL].notna().any() else None
 
 
 old_league_quality = league_quality(league_switch["from_league"], league_switch["from_season"])
@@ -252,8 +260,8 @@ c3.metric(
     "3. League quality (proxy)",
     f"{old_league_quality:.2f} → {new_league_quality:.2f}"
     if old_league_quality is not None and new_league_quality is not None else "—",
-    help=f"League-wide average {label} that season — a rough proxy, not a "
-         f"validated strength rating like a true Elo system.",
+    help=f"League-wide average {QUALITY_METRIC_LABEL} that season — a rough "
+         f"proxy, not a validated strength rating like a true Elo system.",
 )
 c4.metric(
     "4. Same role?",
@@ -354,6 +362,14 @@ with panel_c:
 
 # --- Panel (d): percentile vs. league distribution ---
 st.subheader("(d) Where This Player Sits vs. the New League")
+
+panel_d_metric_choice = st.radio(
+    "Chart metric (this chart only):",
+    ["xG per 90", "Pass Success %", "Events per 90"],
+    horizontal=True,
+    key="panel_d_metric",
+)
+col, label = metric_map[panel_d_metric_choice]
 
 dist_data = player_seasons[
     (player_seasons["season"] == league_switch["to_season"])
