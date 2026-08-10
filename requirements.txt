@@ -18,6 +18,7 @@ plotly
 scipy
 statsmodels
 scikit-posthocs
+scikit-learn
 
 
 # Optional: only needed if you also want to pull StatsBomb directly from their API
