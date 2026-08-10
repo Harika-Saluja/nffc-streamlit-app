@@ -135,16 +135,29 @@ else:
              f"— falls in the **{player_bucket}** bucket")
 
 # ===========================================================
-# THREE METRICS x AGE BUCKET — simple bucket means, no clustering yet
+# THREE METRICS x AGE BUCKET — combined into ONE chart
+#
+# Speed (km/h), Endurance (pl_sum), and Explosiveness (a_sum) are on
+# completely different scales — plotting raw values together would be
+# meaningless (one metric's bars would dwarf the others). Instead, each
+# metric is normalized to "% of its own peak bucket" so all three sit
+# sensibly on one shared 0-100% axis, and grouped by age bucket.
 # ===========================================================
 st.markdown("---")
-st.header("Performance by Age Bucket")
+st.header("Performance by Age Bucket — All Three Metrics")
+st.caption(
+    "Each metric is shown as a % of its OWN highest bucket, not raw "
+    "values — Speed (km/h), Endurance (pl_sum), and Explosiveness "
+    "(a_sum) are on very different scales and wouldn't compare "
+    "meaningfully side by side otherwise. 100% = that metric's own peak "
+    "age bucket."
+)
 
 peak_summary = []
+combined_fig = go.Figure()
+domain_colors = {"Speed": "steelblue", "Endurance": "seagreen", "Explosiveness": "darkorange"}
 
 for domain_name, metric_col in DOMAINS.items():
-    st.subheader(domain_name)
-
     dom_data = sessions.dropna(subset=[metric_col])
     if dom_data.empty:
         st.info(f"No {domain_name.lower()} data available.")
@@ -158,35 +171,44 @@ for domain_name, metric_col in DOMAINS.items():
         st.info(f"Not enough {domain_name.lower()} data across age buckets.")
         continue
 
-    bucket_stats["ci95"] = 1.96 * bucket_stats["std"] / np.sqrt(bucket_stats["n"])
     best_bucket = bucket_stats["mean"].idxmax()
     peak_summary.append({"Domain": domain_name, "Peak Age Bucket": best_bucket,
                           "Mean Value": round(bucket_stats.loc[best_bucket, "mean"], 2)})
 
-    bar_colors = ["gold" if b == best_bucket else "steelblue" for b in bucket_stats.index]
-    bar_fig = go.Figure(go.Bar(
-        x=bucket_stats.index, y=bucket_stats["mean"],
-        error_y=dict(type="data", array=bucket_stats["ci95"].fillna(0)),
-        marker_color=bar_colors,
-        text=[f"{v:.1f} (n={n})" for v, n in zip(bucket_stats["mean"], bucket_stats["n"])],
-        textposition="outside",
-    ))
-    if player_bucket is not None:
-        bar_fig.add_annotation(
-            x=str(player_bucket), y=bucket_stats.loc[player_bucket, "mean"] if player_bucket in bucket_stats.index else 0,
-            text=f"← {player_name}", showarrow=True, arrowhead=2,
-        )
-    bar_fig.update_layout(
-        title=f"{domain_name} ({metric_col}) by age bucket — gold = highest mean",
-        xaxis_title="Age bucket", yaxis_title=metric_col,
-    )
-    st.plotly_chart(bar_fig, use_container_width=True)
+    # normalize to % of this metric's own peak bucket
+    peak_value = bucket_stats["mean"].max()
+    pct_of_peak = (bucket_stats["mean"] / peak_value * 100) if peak_value != 0 else bucket_stats["mean"] * 0
 
-    st.caption(
-        "Column meanings (v_max, pl_sum, a_sum) are inferred from Catapult "
-        "naming conventions, not yet confirmed against official "
-        "documentation — treat as relative/comparative, not verified units."
+    combined_fig.add_trace(go.Bar(
+        x=bucket_stats.index, y=pct_of_peak,
+        name=f"{domain_name} ({metric_col})",
+        marker_color=domain_colors.get(domain_name, "gray"),
+        text=[f"{v:.0f}%" for v in pct_of_peak],
+        textposition="outside",
+        hovertext=[f"{domain_name}: {raw:.1f} raw (n={n})" for raw, n in zip(bucket_stats["mean"], bucket_stats["n"])],
+        hoverinfo="text",
+    ))
+
+if player_bucket is not None:
+    combined_fig.add_vline(
+        x=str(player_bucket), line_dash="dot", line_color="crimson",
+        annotation_text=f"{player_name}'s bucket", annotation_position="top",
     )
+
+combined_fig.update_layout(
+    title="Speed, Endurance, Explosiveness by age bucket (% of each metric's own peak)",
+    xaxis_title="Age bucket", yaxis_title="% of metric's peak bucket",
+    barmode="group",
+    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+)
+st.plotly_chart(combined_fig, use_container_width=True)
+
+st.caption(
+    "Column meanings (v_max, pl_sum, a_sum) are inferred from Catapult "
+    "naming conventions, not yet confirmed against official "
+    "documentation — treat as relative/comparative, not verified units. "
+    "Hover over a bar to see that metric's actual raw value."
+)
 
 # ===========================================================
 # SUMMARY TABLE
