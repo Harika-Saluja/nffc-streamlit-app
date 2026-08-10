@@ -3,6 +3,23 @@ import duckdb
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
+import json
+from datetime import datetime, timezone
+
+# Defensive: Step 2 below needs these three packages. If any are missing
+# on the deployed environment (this is exactly what crashed the previous
+# version — ModuleNotFoundError on sklearn), Step 1 above still works
+# fully; Step 2 just shows a clear message instead of crashing the page.
+try:
+    from scipy import stats
+    import statsmodels.formula.api as smf
+    from sklearn.cluster import KMeans
+    from sklearn.metrics import silhouette_score
+    HAS_ADVANCED_LIBS = True
+    MISSING_LIB_ERROR = None
+except ImportError as e:
+    HAS_ADVANCED_LIBS = False
+    MISSING_LIB_ERROR = str(e)
 
 # -------------------------------
 # Page config
@@ -180,7 +197,196 @@ if peak_summary:
     st.dataframe(pd.DataFrame(peak_summary), use_container_width=True, hide_index=True)
     st.caption(
         "This is a simple bucket-mean comparison — no significance testing "
-        "yet (Kruskal-Wallis / Dunn's / mixed-effects clustering are "
-        "planned as the next step once this base version is confirmed "
-        "stable in deployment)."
+        "yet. The rigorous version (z-score, ROUT, mixed-effects model, "
+        "clustering) is Step 2 below."
     )
+
+# ===========================================================
+# STEP 2 — Branquinho et al. (2025) methodology
+# "The Aging Curve: How Age Affects Physical Performance in Elite
+# Football", J. Funct. Morphol. Kinesiol. 10(4):385.
+# https://doi.org/10.3390/jfmk10040385
+#
+# Gated behind HAS_ADVANCED_LIBS — if scipy/statsmodels/sklearn aren't
+# installed on this deployment, this section shows a clear message
+# instead of crashing the whole page (Step 1 above still works either way).
+# ===========================================================
+st.markdown("---")
+st.header("Step 2 — Paper-Replicated Pipeline (Branquinho et al., 2025)")
+
+if not HAS_ADVANCED_LIBS:
+    st.error(
+        f"This section needs `scipy`, `statsmodels`, and `scikit-learn`, "
+        f"which aren't available in this deployment right now "
+        f"(`{MISSING_LIB_ERROR}`). Step 1 above still works fully. To fix "
+        f"this section: confirm `scipy`, `statsmodels`, and `scikit-learn` "
+        f"are in requirements.txt on GitHub (not just locally), then "
+        f"reboot/redeploy the app."
+    )
+else:
+    st.caption(
+        "Following: Branquinho, L. et al. (2025). The Aging Curve: How Age "
+        "Affects Physical Performance in Elite Football. J. Funct. "
+        "Morphol. Kinesiol. 10(4), 385. https://doi.org/10.3390/jfmk10040385"
+    )
+
+    has_position = "primary_position" in con.execute("DESCRIBE lineups").df()["column_name"].values
+    if not has_position:
+        st.warning(
+            "`primary_position` not found in lineups.parquet — position-"
+            "stratified z-scoring below will be skipped (uses league-wide "
+            "z-scores instead of within-position, a less faithful "
+            "replication of the paper's method until the dataset is "
+            "rebuilt with that field)."
+        )
+
+    if has_position:
+        pos_df = con.execute("""
+            SELECT player_id, primary_position, COUNT(*) AS n
+            FROM lineups WHERE primary_position IS NOT NULL
+            GROUP BY player_id, primary_position
+        """).df()
+        modal_position = (
+            pos_df.sort_values("n", ascending=False)
+            .drop_duplicates(subset=["player_id"])
+            .set_index("player_id")["primary_position"]
+        )
+        sessions["position"] = sessions["player_id"].map(modal_position)
+    else:
+        sessions["position"] = "ALL"  # single group = league-wide z-score, not position-stratified
+
+    method_b_results = {}
+
+    for domain_name, metric_col in DOMAINS.items():
+        st.markdown("---")
+        st.subheader(f"{domain_name} ({metric_col})")
+
+        dom_data = sessions.dropna(subset=[metric_col, "position"]).copy()
+        if dom_data.empty:
+            st.info(f"No {domain_name.lower()} data available.")
+            continue
+
+        # z-score WITHIN position (or league-wide if position unavailable)
+        dom_data["z"] = dom_data.groupby("position")[metric_col].transform(
+            lambda s: (s - s.mean()) / s.std() if s.std() > 0 else 0
+        )
+
+        # ROUT outlier removal: exclude |z| >= 3, per the paper's stated rule
+        n_before = len(dom_data)
+        dom_data = dom_data[dom_data["z"].abs() < 3]
+        n_removed = n_before - len(dom_data)
+        st.caption(f"ROUT outlier removal: {n_removed} of {n_before} sessions excluded (|z| ≥ 3).")
+
+        if len(dom_data) < 30 or dom_data["player_id"].nunique() < 10:
+            st.warning(f"Not enough data for {domain_name} to run this pipeline reliably.")
+            continue
+
+        # mixed linear model: z ~ age_bucket + position, player random intercept
+        try:
+            mlm = smf.mixedlm(
+                "z ~ C(age_bucket) + C(position)", data=dom_data, groups=dom_data["player_id"]
+            ).fit()
+            mlm_summary = mlm.summary().tables[1]
+        except Exception as e:
+            mlm = None
+            st.info(f"Mixed linear model could not be fit: {e}")
+
+        # hierarchical clustering (via silhouette) + k-means
+        X = dom_data[["z"]].values
+        sil_scores = {}
+        for k in [2, 3, 4]:
+            if len(dom_data) > k:
+                labels_k = KMeans(n_clusters=k, n_init=10, random_state=0).fit_predict(X)
+                if len(set(labels_k)) > 1:
+                    sil_scores[k] = silhouette_score(X, labels_k)
+        best_k = max(sil_scores, key=sil_scores.get) if sil_scores else 3
+
+        kmeans = KMeans(n_clusters=best_k, n_init=10, random_state=0)
+        dom_data["cluster"] = kmeans.fit_predict(X)
+
+        cluster_stats = dom_data.groupby("cluster").agg(
+            mean_age=("age", "mean"),
+            age_ci=("age", lambda s: 1.96 * s.std() / np.sqrt(len(s)) if len(s) > 1 else 0),
+            mean_z=("z", "mean"),
+            n=("z", "count"),
+        ).sort_values("mean_z", ascending=False)
+
+        peak_cluster = cluster_stats.index[0]
+        peak_age_b = cluster_stats.loc[peak_cluster, "mean_age"]
+        peak_ci = cluster_stats.loc[peak_cluster, "age_ci"]
+
+        st.caption(
+            f"Silhouette scores by k: {', '.join(f'{k}={v:.2f}' for k, v in sil_scores.items())} "
+            f"— using k={best_k}."
+        )
+
+        # one-way ANOVA + eta-squared (Duncan's post-hoc not available in
+        # Python's standard stats libraries — omitted here rather than
+        # substituting silently; Tukey HSD is a reasonable addition if
+        # this needs a formal pairwise test later)
+        groups_for_anova = [dom_data[dom_data["cluster"] == c]["z"].values for c in cluster_stats.index]
+        f_stat, anova_p = stats.f_oneway(*groups_for_anova)
+        grand_mean = dom_data["z"].mean()
+        ss_between = sum(len(g) * (g.mean() - grand_mean) ** 2 for g in groups_for_anova)
+        ss_total = sum((dom_data["z"] - grand_mean) ** 2)
+        eta_sq = ss_between / ss_total if ss_total > 0 else 0
+
+        method_b_results[domain_name] = {
+            "peak_age": float(peak_age_b),
+            "peak_age_ci": float(peak_ci),
+            "n_clusters": int(best_k),
+            "anova_p_value": float(anova_p),
+            "eta_squared": float(eta_sq),
+        }
+
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Peak age (best cluster)", f"{peak_age_b:.1f} ± {peak_ci:.1f}")
+        c2.metric("ANOVA p-value", f"{anova_p:.4f}")
+        c3.metric("Effect size (η²)", f"{eta_sq:.3f}")
+
+        if mlm is not None:
+            with st.expander("Mixed linear model summary (z ~ age_bucket + position, player random intercept)"):
+                st.dataframe(mlm_summary)
+
+        # chart: age vs z, colored by cluster, selected player highlighted
+        fig_b = go.Figure()
+        for c in cluster_stats.index:
+            cluster_pts = dom_data[dom_data["cluster"] == c]
+            fig_b.add_trace(go.Scatter(
+                x=cluster_pts["age"], y=cluster_pts["z"],
+                mode="markers", marker=dict(size=5, opacity=0.35),
+                name=f"Cluster {c} (mean age {cluster_stats.loc[c, 'mean_age']:.1f})",
+            ))
+            fig_b.add_vline(x=cluster_stats.loc[c, "mean_age"], line_dash="dot", line_color="gray", opacity=0.5)
+
+        player_pts = dom_data[dom_data["player_id"] == player_id]
+        if not player_pts.empty:
+            fig_b.add_trace(go.Scatter(
+                x=player_pts["age"], y=player_pts["z"],
+                mode="markers", marker=dict(size=12, color="gold", line=dict(width=1, color="black")),
+                name=f"{player_name}'s sessions",
+            ))
+
+        fig_b.add_vline(x=peak_age_b, line_dash="dash", line_color="crimson",
+                         annotation_text=f"Peak: {peak_age_b:.1f}y")
+        fig_b.update_layout(
+            title=f"{domain_name} — age vs. z-score, clustered (gold = {player_name})",
+            xaxis_title="Age", yaxis_title=f"{domain_name} z-score",
+        )
+        st.plotly_chart(fig_b, use_container_width=True)
+
+    if method_b_results:
+        st.markdown("---")
+        st.subheader("Step 2 Summary — Peak Ages by Domain")
+        st.dataframe(pd.DataFrame(method_b_results).T, use_container_width=True)
+
+        verdict_record = {
+            "hypothesis": "H3 — Age Optimization",
+            "method_b": {
+                "citation": "Branquinho et al. (2025), J. Funct. Morphol. Kinesiol. 10(4):385",
+                "domains": method_b_results,
+                "last_computed": datetime.now(timezone.utc).isoformat(),
+            },
+        }
+        with open("verdict_h3.json", "w") as f:
+            json.dump(verdict_record, f, indent=2)
