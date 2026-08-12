@@ -48,24 +48,6 @@ RAW_COL_DEFINITIONS = {
 }
 
 
-def sup_help(term: str, definition: str) -> str:
-    """A term followed by a small, always-visible, superscript '?' that
-    shows the definition as a native browser tooltip on hover (a plain
-    HTML `title` attribute — works regardless of Streamlit version,
-    unlike dataframe column tooltips, which only appear on hover with
-    no visible marker at all)."""
-    safe_def = definition.replace('"', "&quot;")
-    return (
-        f'<span style="white-space:nowrap;">{term}'
-        f'<sup title="{safe_def}" style="cursor:help; color:#888; margin-left:2px;">❓</sup>'
-        f'</span>'
-    )
-
-
-def term_glossary_line(terms: dict) -> str:
-    return " &nbsp;&nbsp;&nbsp; ".join(sup_help(t, d) for t, d in terms.items())
-
-
 # -------------------------------
 # Load data
 # -------------------------------
@@ -286,6 +268,19 @@ with st.expander("ℹ️ How are these player-windows built?"):
         "player who's already out isn't generating a normal "
         "training-exposure window."
     )
+    st.markdown(
+        "**What the two sliders below actually do:** moving either one "
+        "rebuilds every number and chart in this section from scratch, "
+        "using a different window/follow-up definition — this is a way "
+        "to check whether a finding holds up under different reasonable "
+        "choices, rather than being an artifact of one specific choice. "
+        "A wider window considers more training history before each "
+        "injury; a shorter follow-up requires the injury to happen "
+        "almost immediately after the window ends. If the verdict below "
+        "stays roughly the same across different settings, that's a "
+        "sign of a more robust finding — if it flips around a lot, "
+        "that's worth treating with extra caution."
+    )
 
 WINDOW_DAYS = st.slider(
     "Sliding window size — how many days of training load to look back over (days)",
@@ -470,16 +465,34 @@ st.caption(
     "effect' in this data."
 )
 
-st.markdown(
-    term_glossary_line({
-        **RAW_COL_DEFINITIONS,
-        "odds_ratio": "Multiplicative change in the odds of injury per one raw unit increase in that metric. 1 = no effect.",
-        "pval": "Probability of this odds ratio arising by chance if the true effect were zero. Below 0.05 is conventionally significant.",
-        "or_ci_low": "Lower bound of the 95% confidence interval for the odds ratio.",
-        "or_ci_high": "Upper bound of the 95% confidence interval for the odds ratio.",
-    }),
-    unsafe_allow_html=True,
+# Term glossary using st.metric's tap-friendly help popover — the
+# earlier HTML `title`-attribute approach only shows on mouse HOVER,
+# which doesn't exist on touch devices, so the "?" marks were visible
+# but did nothing when tapped. st.metric's help works on tap too.
+glossary_row1 = st.columns(4)
+glossary_row1[0].metric("sl_sum", "—", help=RAW_COL_DEFINITIONS["sl_sum"])
+glossary_row1[1].metric("a_sum", "—", help=RAW_COL_DEFINITIONS["a_sum"])
+glossary_row1[2].metric("pl_sum", "—", help=RAW_COL_DEFINITIONS["pl_sum"])
+glossary_row1[3].metric("hr_max", "—", help=RAW_COL_DEFINITIONS["hr_max"])
+
+glossary_row2 = st.columns(4)
+glossary_row2[0].metric(
+    "odds_ratio", "—",
+    help="Multiplicative change in the odds of injury per one raw unit increase in that metric. 1 = no effect.",
 )
+glossary_row2[1].metric(
+    "pval", "—",
+    help="Probability of this odds ratio arising by chance if the true effect were zero. Below 0.05 is conventionally significant.",
+)
+glossary_row2[2].metric(
+    "or_ci_low", "—",
+    help="Lower bound of the 95% confidence interval for the odds ratio.",
+)
+glossary_row2[3].metric(
+    "or_ci_high", "—",
+    help="Upper bound of the 95% confidence interval for the odds ratio.",
+)
+
 st.dataframe(
     summary_df[["odds_ratio", "pval", "or_ci_low", "or_ci_high"]].round(4),
     use_container_width=True,
