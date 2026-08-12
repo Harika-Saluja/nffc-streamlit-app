@@ -478,35 +478,38 @@ if method_b_results:
     )
 
     st.markdown("---")
-    st.subheader(f"Overall Peak Age Result for {player_name}")
+    st.subheader("Overall Peak Age Result")
+    st.caption(
+        "The age bucket where performance was/is best for each metric, "
+        "based on the clustering analysis above — not tied to this "
+        "player's own current age."
+    )
 
-    if player_current_age is None:
-        st.info(
-            f"{player_name} has no matched Catapult sessions, so their "
-            f"own age can't be compared against these peak ages."
-        )
-    else:
-        st.write(f"**{player_name}'s current age:** {player_current_age:.1f}")
-        for domain_name, res in method_b_results.items():
-            peak_age = res["peak_age"]
-            distance = abs(player_current_age - peak_age)
-            if distance <= 1:
-                dot, status = "🟢", "at/near peak age"
-            elif distance <= 3:
-                dot, status = "🟡", "approaching or past peak age"
-            else:
-                dot, status = "🔴", "well before or after peak age"
-            st.write(
-                f"{dot} **{domain_name}** — peak age {peak_age:.1f}y, "
-                f"{status} ({distance:.1f} years from their own age)"
-            )
+    for domain_name, res in method_b_results.items():
+        peak_age = res["peak_age"]
+        anova_p = res["anova_p_value"]
+        eta_sq = res["eta_squared"]
+        peak_bucket = pd.cut([peak_age], bins=AGE_BANDS, labels=AGE_BAND_LABELS, right=False)[0]
 
-        st.caption(
-            "🟢 = within 1 year of peak age · 🟡 = within 1–3 years · "
-            "🔴 = more than 3 years away. Based on the peak ages computed "
-            "above for each metric — the same clustering caveat noted "
-            "in each metric's own explanation applies here too."
+        if anova_p < 0.05 and eta_sq >= 0.06:
+            dot, confidence = "🟢", "strong statistical support"
+        elif anova_p < 0.05:
+            dot, confidence = "🟡", "some statistical support"
+        else:
+            dot, confidence = "🔴", "not statistically significant"
+
+        st.write(
+            f"{dot} **{domain_name}** — best age bucket: **{peak_bucket}** "
+            f"(peak age {peak_age:.1f}y, {confidence})"
         )
+
+    st.caption(
+        "🟢 = statistically significant with a sizeable effect · 🟡 = "
+        "significant but a small effect · 🔴 = not statistically "
+        "significant. This significance comes from the same "
+        "clustering-based ANOVA flagged in each metric's own "
+        "explanation above, so treat it with the same caution."
+    )
 
     verdict_record = {
         "hypothesis": "H3 — Age Optimization",
