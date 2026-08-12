@@ -77,6 +77,33 @@ metric_map = {
 # metric rather than following the page-scoped Panel-d selector.
 QUALITY_METRIC_COL, QUALITY_METRIC_LABEL = metric_map["xG per 90"]
 
+# Shared definitions for the three underlying per-90 metrics, reused
+# everywhere they're shown so the same explanation appears wherever a
+# "?" tooltip can attach to a real widget.
+METRIC_DEFINITIONS = {
+    "xG per 90": (
+        "**xG per 90** — Expected Goals per 90 minutes: the sum of shot "
+        "quality (xG) across a player's matches that season, divided by "
+        "total minutes played, scaled to a 90-minute rate. Reflects "
+        "shot-quality/attacking threat, independent of whether the shots "
+        "actually scored."
+    ),
+    "Pass Success %": (
+        "**Pass Success %** — despite the name, not a literal completion "
+        "percentage: it's the average, across the player's matches that "
+        "season, of each match's own mean pass-success probability — an "
+        "average of match-level averages, not weighted by how many "
+        "passes were actually attempted in each match."
+    ),
+    "Events per 90": (
+        "**Events per 90** — total recorded on-ball events (any touch or "
+        "action), summed across the player's matches that season, "
+        "divided by total minutes, scaled to a 90-minute rate. A rough "
+        "volume/involvement proxy — not weighted by event type or value."
+    ),
+}
+METRIC_DEFINITIONS_HELP = "\n\n".join(METRIC_DEFINITIONS.values())
+
 # -------------------------------
 # Sidebar – full player roster, with a move indicator per player
 # -------------------------------
@@ -351,6 +378,11 @@ all_metric_labels = {"xg_90": "xG / 90", "pass_success_avg": "Pass Success %", "
 
 # --- Predicted performance change ---
 st.subheader("Predicted Player Performance Change")
+
+with st.expander("ℹ️ What do xG/90, Pass Success %, and Events/90 mean?"):
+    for definition in METRIC_DEFINITIONS.values():
+        st.markdown(definition)
+
 if before.empty or after.empty:
     st.info("Missing before/after data for this move.")
     pct_rows = []
@@ -373,7 +405,10 @@ else:
         ))
         bar_fig.add_vline(x=0, line_color="gray")
         bar_fig.update_layout(
-            title=f"{player_name} — predicted % change per metric",
+            title=(
+                f"Predicted % change per metric from "
+                f"{league_switch['from_league']} to {league_switch['to_league']}"
+            ),
             xaxis_title="% change (before → after move)",
             height=300,
         )
@@ -382,15 +417,25 @@ else:
         all_positive = all(r["pct_change"] > 0 for r in pct_rows)
         all_negative = all(r["pct_change"] < 0 for r in pct_rows)
         if all_positive:
-            verdict_a, badge_a = "Positive across all metrics", "🟢"
+            verdict_a, badge_a, short_verdict = "Positive across all metrics", "🟢", "Positive"
+            verdict_detail = "Every tracked metric improved after the move."
         elif all_negative:
-            verdict_a, badge_a = "Negative across all metrics", "🔴"
+            verdict_a, badge_a, short_verdict = "Negative across all metrics", "🔴", "Negative"
+            verdict_detail = "Every tracked metric declined after the move."
         else:
-            verdict_a, badge_a = "Mixed — improved on some metrics, declined on others", "🟡"
+            verdict_a, badge_a, short_verdict = (
+                "Mixed — improved on some metrics, declined on others", "🟡", "Mixed",
+            )
+            verdict_detail = "Some tracked metrics improved after the move while others declined."
 
+        # NOTE: st.metric's value field truncates long text with an
+        # ellipsis and does not wrap — keeping the metric value short
+        # (badge + one word) and putting the full explanation in a
+        # st.caption underneath (smaller font than the metric number,
+        # wraps normally onto multiple lines) avoids that truncation.
         st.metric(
             "Verdict",
-            f"{badge_a} {verdict_a}",
+            f"{badge_a} {short_verdict}",
             help=(
                 "**What it is:** a simple summary of the bars above.\n\n"
                 "**How it's calculated:** 🟢 = every metric's bar is "
@@ -401,12 +446,14 @@ else:
                 "counts the same as a large +77% here."
             ),
         )
+        st.caption(verdict_detail)
     else:
         st.info("Not enough non-zero data to compute % change.")
 
+st.markdown("---")
+
 # --- Data confidence (stacked below, not side-by-side — the two-column
 # layout was cutting off text on narrower screens) ---
-st.markdown("---")
 st.subheader("Data Confidence")
 
 def rag_status(n_matches: int) -> tuple[str, str]:
@@ -469,6 +516,8 @@ st.metric(
 )
 st.caption(overall_conf_note)
 
+st.markdown("---")
+
 # --- Where this player sits vs. the new league ---
 st.subheader("Where This Player Sits vs. the New League")
 
@@ -477,6 +526,7 @@ panel_d_metric_choice = st.radio(
     ["xG per 90", "Pass Success %", "Events per 90"],
     horizontal=True,
     key="panel_d_metric",
+    help=METRIC_DEFINITIONS_HELP,
 )
 col, label = metric_map[panel_d_metric_choice]
 
@@ -522,7 +572,8 @@ else:
                 "**How it's calculated:** the share of the destination "
                 "league's players whose value was LOWER than this "
                 "player's, × 100. E.g. 94th percentile = higher than 94 "
-                "out of 100 players in that league on this metric."
+                "out of 100 players in that league on this metric.\n\n"
+                + METRIC_DEFINITIONS[panel_d_metric_choice]
             ),
         )
         if percentile >= 75:
@@ -534,6 +585,8 @@ else:
         st.caption(interp)
     else:
         st.info(f"{player_name} has no recorded {label} value after the move to compare.")
+
+st.markdown("---")
 
 # ===========================================================
 # SAVE VERDICT — for the Myth Verdict summary dashboard
