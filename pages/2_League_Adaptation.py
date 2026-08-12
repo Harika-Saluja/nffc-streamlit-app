@@ -78,15 +78,7 @@ metric_map = {
 QUALITY_METRIC_COL, QUALITY_METRIC_LABEL = metric_map["xG per 90"]
 
 # -------------------------------
-# Sidebar – custom scrollable player list, with a small, right-aligned
-# move-status dot per player.
-#
-# A native st.sidebar.selectbox can't do this: its options are plain
-# text rendered by the browser's own <select> element, which does not
-# allow per-option CSS (size, alignment, positioning) in any browser.
-# This replaces it with a manually-built list — one row per player,
-# each row a button (the clickable target) plus a small CSS-styled
-# <span> dot, laid out in a fixed-height scrollable container.
+# Sidebar – full player roster, with a move indicator per player
 # -------------------------------
 st.sidebar.title("Player Selector")
 
@@ -117,7 +109,8 @@ def detect_all_league_switches(pdata: pd.DataFrame):
 
 
 # Precompute, for EVERY player, whether any cross-league move is
-# detected across their tracked seasons — drives the dot color.
+# detected across their tracked seasons — used only to decorate the
+# sidebar selector (🟢 = moved, 🔴 = no detected move in this window).
 # Uses a plain dict comprehension (not groupby().apply(...,
 # include_groups=False)) since that kwarg needs pandas 2.2+ and this
 # needs to run on whatever pandas version is actually deployed.
@@ -128,73 +121,17 @@ move_status = pd.Series(
 move_status.index.name = "player_id"
 players = players.merge(move_status, on="player_id", how="left")
 players["has_move"] = players["has_move"].fillna(False)
+players["display_label"] = players["player_name"] + players["has_move"].map({True: " 🟢", False: " 🔴"})
 
-st.sidebar.markdown(
-    """
-    <style>
-    .player-dot {
-        display: inline-block;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        flex-shrink: 0;
-    }
-    .player-dot-wrap {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        height: 100%;
-        padding-right: 4px;
-    }
-    div[data-testid="stVerticalBlock"] .stButton > button {
-        text-align: left;
-        padding-left: 8px;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-search_query = st.sidebar.text_input("Search players", "", placeholder="Type a name…")
-filtered_players = (
-    players[players["player_name"].str.contains(search_query, case=False, na=False)]
-    if search_query else players
-)
-
-if "selected_player_id" not in st.session_state or (
-    st.session_state.selected_player_id not in players["player_id"].values
-):
-    st.session_state.selected_player_id = int(players.iloc[0]["player_id"])
-
+selected_label = st.sidebar.selectbox("Select Player", players["display_label"])
 st.sidebar.caption("🟢 = moved leagues within the tracked window · 🔴 = no detected move")
 
-with st.sidebar.container(height=360, border=True):
-    if filtered_players.empty:
-        st.caption("No players match that search.")
-    for _, row in filtered_players.iterrows():
-        pid = int(row["player_id"])
-        name = row["player_name"]
-        dot_color = "#2ecc71" if row["has_move"] else "#e74c3c"
-        is_selected = pid == st.session_state.selected_player_id
-
-        row_cols = st.columns([5, 1])
-        with row_cols[0]:
-            if st.button(
-                name, key=f"player_row_{pid}", use_container_width=True,
-                type="primary" if is_selected else "secondary",
-            ):
-                st.session_state.selected_player_id = pid
-                st.rerun()
-        with row_cols[1]:
-            st.markdown(
-                f'<div class="player-dot-wrap">'
-                f'<span class="player-dot" style="background-color:{dot_color};"></span>'
-                f'</div>',
-                unsafe_allow_html=True,
-            )
-
-player_id = st.session_state.selected_player_id
-player_name = players.loc[players["player_id"] == player_id, "player_name"].iloc[0]
+matched = players.loc[players["display_label"] == selected_label]
+if matched.empty:
+    st.error("Selected player not found.")
+    st.stop()
+player_id = int(matched["player_id"].iloc[0])
+player_name = matched["player_name"].iloc[0]
 
 st.markdown("---")
 
@@ -349,7 +286,7 @@ c1.metric(
         "**What it is:** cosine similarity between two 3-value vectors — "
         "the player's own (xG/90, pass success %, events/90) from their "
         "final season before the move, and the league-wide average of "
-        "those same three numbers in the destination league in that season.\n\n"
+        "those same three numbers in the destination league in  that season.\n\n"
         "**How it's calculated:** cos(θ) = (A·B) / (|A|·|B|), where A is "
         "the player's vector and B is the league-average vector. Ranges "
         "0–1; closer to 1 means the two vectors point in a similar "
