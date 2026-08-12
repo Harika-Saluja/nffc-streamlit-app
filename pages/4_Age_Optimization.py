@@ -39,7 +39,13 @@ con.execute("""
 """)
 
 # -------------------------------
-# Sidebar – full player roster
+# Sidebar – custom scrollable player list, with a small, right-aligned
+# dot showing which players have matched Catapult data at all (the
+# gate that determines whether this page can analyze them). Green =
+# has at least one matched session; red = none, so charts on this page
+# can't highlight them. A native st.sidebar.selectbox can't do this —
+# its options are plain text with no per-option CSS control — so this
+# is a manually-built list instead (same approach as League Adaptation).
 # -------------------------------
 st.sidebar.title("Player Selector")
 
@@ -50,12 +56,75 @@ if players.empty:
     st.error("No players found in lineups.parquet.")
     st.stop()
 
-player_name = st.sidebar.selectbox("Select Player", players["player_name"])
-matched = players.loc[players["player_name"] == player_name, "player_id"]
-if matched.empty:
-    st.error("Selected player not found.")
-    st.stop()
-player_id = int(matched.iloc[0])
+matched_ids = con.execute("""
+    SELECT DISTINCT x.statsbomb_player_id AS player_id
+    FROM catapult c JOIN crosswalk x ON c.athlete_id = x.athlete_id
+    WHERE x.statsbomb_player_id IS NOT NULL
+""").df()["player_id"]
+players["has_data"] = players["player_id"].isin(matched_ids)
+
+st.sidebar.markdown(
+    """
+    <style>
+    .player-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+    .player-dot-wrap {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        height: 100%;
+        padding-right: 4px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+search_query = st.sidebar.text_input("Search players", "", placeholder="Type a name…")
+filtered_players = (
+    players[players["player_name"].str.contains(search_query, case=False, na=False)]
+    if search_query else players
+)
+
+if "selected_player_id" not in st.session_state or (
+    st.session_state.selected_player_id not in players["player_id"].values
+):
+    st.session_state.selected_player_id = int(players.iloc[0]["player_id"])
+
+st.sidebar.caption("🟢 dot = has matched Catapult data · 🔴 dot = no matched data (can't be analyzed here)")
+
+with st.sidebar.container(height=360, border=True):
+    if filtered_players.empty:
+        st.caption("No players match that search.")
+    for _, row in filtered_players.iterrows():
+        pid = int(row["player_id"])
+        name = row["player_name"]
+        dot_color = "#2ecc71" if row["has_data"] else "#e74c3c"
+        is_selected = pid == st.session_state.selected_player_id
+
+        row_cols = st.columns([5, 1])
+        with row_cols[0]:
+            if st.button(
+                name, key=f"player_row_{pid}", use_container_width=True,
+                type="primary" if is_selected else "secondary",
+            ):
+                st.session_state.selected_player_id = pid
+                st.rerun()
+        with row_cols[1]:
+            st.markdown(
+                f'<div class="player-dot-wrap">'
+                f'<span class="player-dot" style="background-color:{dot_color};"></span>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+
+player_id = st.session_state.selected_player_id
+player_name = players.loc[players["player_id"] == player_id, "player_name"].iloc[0]
 
 st.markdown("---")
 st.header(player_name)
@@ -291,7 +360,6 @@ for domain_name, metric_col in DOMAINS.items():
         mlm = smf.mixedlm(
             "z ~ C(age_bucket) + C(position)", data=dom_data, groups=dom_data["player_id"]
         ).fit()
-        mlm_summary = mlm.summary().tables[1]
     except Exception as e:
         mlm = None
         st.info(f"Mixed-effects model could not be fit: {e}")
@@ -349,8 +417,75 @@ for domain_name, metric_col in DOMAINS.items():
     )
 
     if mlm is not None:
-        with st.expander("Mixed-effects model detail (age bucket + position, player random intercept)"):
-            st.dataframe(mlm_summary)
+        # WHAT THIS IS: a mixed-effects regression predicting each
+        # session's z-score from its age bucket and position, while
+        # giving every player their own baseline (random intercept) so
+        # a player with many sessions doesn't dominate the estimate.
+        # It's the more trustworthy of the two statistical checks on
+        # this page — unlike the clustering above, its groups (age
+        # buckets) are defined independently of the z-score being
+        # tested, so it doesn't have that circularity problem. The raw
+        # statsmodels output is a dense table meant for a statistician,
+        # not a dashboard reader — this pulls out just the age-bucket
+        # rows and states them in plain language instead.
+        age_effect_rows = []
+        for idx in mlm.params.index:
+            if idx.startswith("C(age_bucket)"):
+                bucket_label = idx.split("T.")[-1].rstrip("]")
+                coef = mlm.params[idx]
+                p = mlm.pvalues[idx]
+                age_effect_rows.append({
+                    "Age bucket": bucket_label,
+                    "Effect vs. ≤22 baseline": round(float(coef), 3),
+                    "p-value": round(float(p), 4),
+                    "Significant?": "Yes" if p < 0.05 else "No",
+                })
+
+        if age_effect_rows:
+            st.markdown("**Age effect, independent check (mixed-effects model):**")
+            st.caption(
+                "Compares each age bucket's average z-score to the ≤22 "
+                "baseline, holding position constant and accounting for "
+                "each player's own baseline. This is a more independent "
+                "test of an age effect than the clustering/ANOVA above."
+            )
+            st.dataframe(pd.DataFrame(age_effect_rows), use_container_width=True, hide_index=True)
+
+    with st.expander(f"ℹ️ What does the {domain_name.lower()} age-vs-z-score chart show?"):
+        st.markdown(
+            f"**What each dot is:** every gray/blue dot is ONE training "
+            f"session (not one player) — the session's age (x-axis) "
+            f"plotted against its z-scored {domain_name.lower()} value "
+            f"(y-axis). A single player contributes many dots, one per "
+            f"session."
+        )
+        st.markdown(
+            "**What the colors mean:** sessions are split into groups "
+            "by k-means clustering on the z-score alone (age isn't "
+            "given to the clustering step) — each color is one such "
+            "group, labeled in the legend by that group's own average "
+            "age."
+        )
+        st.markdown(
+            f"**The gold dots:** {player_name}'s own individual "
+            f"sessions, shown only if they have matched data for this "
+            f"metric — drawn on top of the population so you can see "
+            f"where they personally fall."
+        )
+        st.markdown(
+            "**How peak age is calculated:** whichever cluster has the "
+            "higher average z-score is treated as the 'higher-"
+            "performing' group. Peak age is simply that group's "
+            "average age."
+        )
+        st.markdown(
+            "**The two kinds of vertical line:** a **gray dotted line** "
+            "is drawn at EVERY cluster's own average age (one per "
+            "cluster/color). The **red dashed line** marks the peak "
+            "cluster's average age specifically — since that's also "
+            "one of the cluster mean ages, the red line always lands "
+            "exactly on top of one of the gray lines."
+        )
 
     fig_b = go.Figure()
     for c in cluster_stats.index:
@@ -399,6 +534,37 @@ if method_b_results:
     st.caption(
         "Peak age (from the clustering analysis above) for each metric, side by side."
     )
+
+    st.markdown("---")
+    st.subheader(f"Overall Peak Age Result for {player_name}")
+
+    if player_current_age is None:
+        st.info(
+            f"{player_name} has no matched Catapult sessions, so their "
+            f"own age can't be compared against these peak ages."
+        )
+    else:
+        st.write(f"**{player_name}'s current age:** {player_current_age:.1f}")
+        for domain_name, res in method_b_results.items():
+            peak_age = res["peak_age"]
+            distance = abs(player_current_age - peak_age)
+            if distance <= 1:
+                dot, status = "🟢", "at/near peak age"
+            elif distance <= 3:
+                dot, status = "🟡", "approaching or past peak age"
+            else:
+                dot, status = "🔴", "well before or after peak age"
+            st.write(
+                f"{dot} **{domain_name}** — peak age {peak_age:.1f}y, "
+                f"{status} ({distance:.1f} years from their own age)"
+            )
+
+        st.caption(
+            "🟢 = within 1 year of peak age · 🟡 = within 1–3 years · "
+            "🔴 = more than 3 years away. Based on the peak ages computed "
+            "above for each metric — the same clustering caveat noted "
+            "in each metric's own explanation applies here too."
+        )
 
     verdict_record = {
         "hypothesis": "H3 — Age Optimization",
