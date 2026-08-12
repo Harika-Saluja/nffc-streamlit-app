@@ -166,7 +166,7 @@ if "selected_player_id" not in st.session_state or (
 ):
     st.session_state.selected_player_id = int(players.iloc[0]["player_id"])
 
-st.sidebar.caption("🟢 dot = moved leagues within the tracked window · 🔴 dot = no detected move")
+st.sidebar.caption("🟢 = moved leagues within the tracked window · 🔴 = no detected move")
 
 with st.sidebar.container(height=360, border=True):
     if filtered_players.empty:
