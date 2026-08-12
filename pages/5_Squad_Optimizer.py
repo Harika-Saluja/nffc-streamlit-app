@@ -409,22 +409,29 @@ else:
             st.markdown("**n_new_signings** — the effect of subgroup imbalance, for domestic players specifically.")
             st.markdown("**is_foreign_int:n_new_signings** — whether the effect of subgroup imbalance differs for foreign vs. domestic newcomers.")
 
-        st.dataframe(
-            summary_df.round(4),
-            use_container_width=True,
-            column_config={
-                "coef": st.column_config.NumberColumn(
-                    "coef ❓", help="Estimated effect on the chosen performance metric.",
-                ),
-                "std_err": st.column_config.NumberColumn(
-                    "std_err ❓", help="Uncertainty around that estimate (standard error).",
-                ),
-                "pval": st.column_config.NumberColumn(
-                    "pval ❓", help="Probability of an effect this large by chance if the "
-                                    "true effect were zero. Below 0.05 is conventionally 'significant'.",
-                ),
-            },
+        # A dataframe column header's tooltip only appears ON HOVER, with
+        # no persistent icon shown — that's why it looked blank earlier.
+        # st.metric's "?" icon, by contrast, is always visible next to
+        # the label. To match that same always-visible style, the column
+        # meanings are shown as three small metric labels directly above
+        # the table, using the same help= mechanism already working for
+        # the p-value metrics below.
+        col_def1, col_def2, col_def3 = st.columns(3)
+        col_def1.metric(
+            "coef", "—",
+            help="Estimated effect on the chosen performance metric.",
         )
+        col_def2.metric(
+            "std_err", "—",
+            help="Uncertainty around that estimate (standard error).",
+        )
+        col_def3.metric(
+            "pval", "—",
+            help="Probability of an effect this large by chance if the "
+                 "true effect were zero. Below 0.05 is conventionally 'significant'.",
+        )
+
+        st.dataframe(summary_df.round(4), use_container_width=True)
 
         foreign_age_p = model.pvalues.get("is_foreign_int:age")
         foreign_signings_p = model.pvalues.get("is_foreign_int:n_new_signings")
