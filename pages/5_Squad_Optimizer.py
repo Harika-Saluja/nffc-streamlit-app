@@ -409,13 +409,21 @@ else:
             st.markdown("**n_new_signings** — the effect of subgroup imbalance, for domestic players specifically.")
             st.markdown("**is_foreign_int:n_new_signings** — whether the effect of subgroup imbalance differs for foreign vs. domestic newcomers.")
 
-        st.dataframe(summary_df.round(4), use_container_width=True)
-        st.caption(
-            "coef = estimated effect on the chosen performance metric. "
-            "std_err = uncertainty around that estimate. pval = "
-            "probability of an effect this large by chance if the true "
-            "effect were zero (below 0.05 is conventionally "
-            "'significant')."
+        st.dataframe(
+            summary_df.round(4),
+            use_container_width=True,
+            column_config={
+                "coef": st.column_config.NumberColumn(
+                    "coef", help="Estimated effect on the chosen performance metric.",
+                ),
+                "std_err": st.column_config.NumberColumn(
+                    "std_err", help="Uncertainty around that estimate (standard error).",
+                ),
+                "pval": st.column_config.NumberColumn(
+                    "pval", help="Probability of an effect this large by chance if the "
+                                 "true effect were zero. Below 0.05 is conventionally 'significant'.",
+                ),
+            },
         )
 
         foreign_age_p = model.pvalues.get("is_foreign_int:age")
