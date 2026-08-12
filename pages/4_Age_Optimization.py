@@ -39,13 +39,7 @@ con.execute("""
 """)
 
 # -------------------------------
-# Sidebar – custom scrollable player list, with a small, right-aligned
-# dot showing which players have matched Catapult data at all (the
-# gate that determines whether this page can analyze them). Green =
-# has at least one matched session; red = none, so charts on this page
-# can't highlight them. A native st.sidebar.selectbox can't do this —
-# its options are plain text with no per-option CSS control — so this
-# is a manually-built list instead (same approach as League Adaptation).
+# Sidebar – full player roster, with a move/data indicator per player
 # -------------------------------
 st.sidebar.title("Player Selector")
 
@@ -62,69 +56,17 @@ matched_ids = con.execute("""
     WHERE x.statsbomb_player_id IS NOT NULL
 """).df()["player_id"]
 players["has_data"] = players["player_id"].isin(matched_ids)
+players["display_label"] = players["player_name"] + players["has_data"].map({True: " 🟢", False: " 🔴"})
 
-st.sidebar.markdown(
-    """
-    <style>
-    .player-dot {
-        display: inline-block;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        flex-shrink: 0;
-    }
-    .player-dot-wrap {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        height: 100%;
-        padding-right: 4px;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+selected_label = st.sidebar.selectbox("Select Player", players["display_label"])
+st.sidebar.caption("🟢 : has matched Catapult data · 🔴 : no matched data (can't be analyzed here)")
 
-search_query = st.sidebar.text_input("Search players", "", placeholder="Type a name…")
-filtered_players = (
-    players[players["player_name"].str.contains(search_query, case=False, na=False)]
-    if search_query else players
-)
-
-if "selected_player_id" not in st.session_state or (
-    st.session_state.selected_player_id not in players["player_id"].values
-):
-    st.session_state.selected_player_id = int(players.iloc[0]["player_id"])
-
-st.sidebar.caption("🟢 dot = has matched Catapult data · 🔴 dot = no matched data (can't be analyzed here)")
-
-with st.sidebar.container(height=360, border=True):
-    if filtered_players.empty:
-        st.caption("No players match that search.")
-    for _, row in filtered_players.iterrows():
-        pid = int(row["player_id"])
-        name = row["player_name"]
-        dot_color = "#2ecc71" if row["has_data"] else "#e74c3c"
-        is_selected = pid == st.session_state.selected_player_id
-
-        row_cols = st.columns([5, 1])
-        with row_cols[0]:
-            if st.button(
-                name, key=f"player_row_{pid}", use_container_width=True,
-                type="primary" if is_selected else "secondary",
-            ):
-                st.session_state.selected_player_id = pid
-                st.rerun()
-        with row_cols[1]:
-            st.markdown(
-                f'<div class="player-dot-wrap">'
-                f'<span class="player-dot" style="background-color:{dot_color};"></span>'
-                f'</div>',
-                unsafe_allow_html=True,
-            )
-
-player_id = st.session_state.selected_player_id
-player_name = players.loc[players["player_id"] == player_id, "player_name"].iloc[0]
+matched = players.loc[players["display_label"] == selected_label]
+if matched.empty:
+    st.error("Selected player not found.")
+    st.stop()
+player_id = int(matched["player_id"].iloc[0])
+player_name = matched["player_name"].iloc[0]
 
 st.markdown("---")
 st.header(player_name)
