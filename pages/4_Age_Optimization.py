@@ -6,10 +6,11 @@ import plotly.graph_objects as go
 import json
 from datetime import datetime, timezone
 
-# Defensive: Step 2 below needs these three packages. If any are missing
-# on the deployed environment (this is exactly what crashed the previous
-# version — ModuleNotFoundError on sklearn), Step 1 above still works
-# fully; Step 2 just shows a clear message instead of crashing the page.
+# Defensive: the statistical section below needs these three packages.
+# If any are missing on the deployed environment (this is exactly what
+# crashed an earlier version — ModuleNotFoundError on sklearn), the
+# peer-comparison charts still work fully; the statistical section just
+# shows a clear message instead of crashing the page.
 try:
     from scipy import stats
     import statsmodels.formula.api as smf
@@ -25,17 +26,7 @@ except ImportError as e:
 # Page config
 # -------------------------------
 st.set_page_config(page_title="Age Optimization", layout="wide")
-st.title("Age Optimization")
-st.caption(
-    "Step 1: Speed, Endurance, and Explosiveness by age — using fixed "
-    "5-year age buckets. No clustering/z-score/mixed-model yet — that's "
-    "a later step, added once this base version is confirmed working."
-)
-st.warning(
-    "**Scope note:** the original brief framed this as 'performance-to-cost "
-    "ratio' — no wage/salary data exists anywhere in this project's bucket, "
-    "so this tests performance by age only, not cost-adjusted."
-)
+st.title("AGE OPTIMIZATION")
 
 # -------------------------------
 # Load data
@@ -48,9 +39,7 @@ con.execute("""
 """)
 
 # -------------------------------
-# Sidebar – full player roster (only players with Catapult data are
-# useful here, but we still show the full roster and handle the
-# no-data case gracefully rather than silently filtering the list)
+# Sidebar – full player roster
 # -------------------------------
 st.sidebar.title("Player Selector")
 
@@ -104,7 +93,7 @@ if sessions.empty:
     st.stop()
 
 # -------------------------------
-# Fixed-width age buckets (5-year gap), following Branquinho et al. (2025)
+# Fixed-width age buckets (5-year gap)
 # -------------------------------
 AGE_BANDS = [15, 23, 28, 33, 100]
 AGE_BAND_LABELS = ["≤22", "23-27", "28-32", "33+"]
@@ -115,6 +104,23 @@ DOMAINS = {
     "Endurance": "pl_sum",
     "Explosiveness": "a_sum",
 }
+METRIC_DEFINITIONS = {
+    "Speed": (
+        "Based on `v_max` — inferred from Catapult naming conventions as "
+        "a player's maximum recorded speed per session, not yet "
+        "confirmed against official documentation."
+    ),
+    "Endurance": (
+        "Based on `pl_sum` — inferred as a cumulative player-load figure "
+        "per session (summed from GPS/accelerometer data), not yet "
+        "confirmed against official documentation."
+    ),
+    "Explosiveness": (
+        "Based on `a_sum` — inferred as a cumulative high-intensity "
+        "acceleration figure per session, not yet confirmed against "
+        "official documentation."
+    ),
+}
 
 # -------------------------------
 # Selected player's own age (as of their most recent session)
@@ -123,8 +129,8 @@ player_sessions = sessions[sessions["player_id"] == player_id]
 if player_sessions.empty:
     st.info(
         f"{player_name} has no Catapult sessions matched via the identity "
-        f"crosswalk — the population charts below still work, but this "
-        f"player can't be highlighted on them."
+        f"crosswalk — the charts below still work, but this player can't "
+        f"be highlighted on them."
     )
     player_current_age = None
     player_bucket = None
@@ -134,281 +140,272 @@ else:
     st.write(f"**{player_name}'s age (most recent session):** {player_current_age:.1f} "
              f"— falls in the **{player_bucket}** bucket")
 
-# ===========================================================
-# THREE METRICS x AGE BUCKET — combined into ONE chart
-#
-# Speed (km/h), Endurance (pl_sum), and Explosiveness (a_sum) are on
-# completely different scales — plotting raw values together would be
-# meaningless (one metric's bars would dwarf the others). Instead, each
-# metric is normalized to "% of its own peak bucket" so all three sit
-# sensibly on one shared 0-100% axis, and grouped by age bucket.
-# ===========================================================
-st.markdown("---")
-st.header("Performance by Age Bucket — All Three Metrics")
-st.caption(
-    "Each metric is shown as a % of its OWN highest bucket, not raw "
-    "values — Speed (km/h), Endurance (pl_sum), and Explosiveness "
-    "(a_sum) are on very different scales and wouldn't compare "
-    "meaningfully side by side otherwise. 100% = that metric's own peak "
-    "age bucket."
-)
-
-peak_summary = []
-combined_fig = go.Figure()
-domain_colors = {"Speed": "steelblue", "Endurance": "seagreen", "Explosiveness": "darkorange"}
-
-for domain_name, metric_col in DOMAINS.items():
-    dom_data = sessions.dropna(subset=[metric_col])
-    if dom_data.empty:
-        st.info(f"No {domain_name.lower()} data available.")
-        continue
-
-    bucket_stats = dom_data.groupby("age_bucket", observed=True)[metric_col].agg(
-        mean="mean", std="std", n="count"
-    ).reindex(AGE_BAND_LABELS).dropna(subset=["mean"])
-
-    if bucket_stats.empty:
-        st.info(f"Not enough {domain_name.lower()} data across age buckets.")
-        continue
-
-    best_bucket = bucket_stats["mean"].idxmax()
-    peak_summary.append({"Domain": domain_name, "Peak Age Bucket": best_bucket,
-                          "Mean Value": round(bucket_stats.loc[best_bucket, "mean"], 2)})
-
-    # normalize to % of this metric's own peak bucket
-    peak_value = bucket_stats["mean"].max()
-    pct_of_peak = (bucket_stats["mean"] / peak_value * 100) if peak_value != 0 else bucket_stats["mean"] * 0
-
-    combined_fig.add_trace(go.Bar(
-        x=bucket_stats.index, y=pct_of_peak,
-        name=f"{domain_name} ({metric_col})",
-        marker_color=domain_colors.get(domain_name, "gray"),
-        text=[f"{v:.0f}%" for v in pct_of_peak],
-        textposition="outside",
-        hovertext=[f"{domain_name}: {raw:.1f} raw (n={n})" for raw, n in zip(bucket_stats["mean"], bucket_stats["n"])],
-        hoverinfo="text",
-    ))
-
-if player_bucket is not None:
-    combined_fig.add_vline(
-        x=str(player_bucket), line_dash="dot", line_color="crimson",
-        annotation_text=f"{player_name}'s bucket", annotation_position="top",
+has_position = "primary_position" in con.execute("DESCRIBE lineups").df()["column_name"].values
+if has_position:
+    pos_df = con.execute("""
+        SELECT player_id, primary_position, COUNT(*) AS n
+        FROM lineups WHERE primary_position IS NOT NULL
+        GROUP BY player_id, primary_position
+    """).df()
+    modal_position = (
+        pos_df.sort_values("n", ascending=False)
+        .drop_duplicates(subset=["player_id"])
+        .set_index("player_id")["primary_position"]
     )
-
-combined_fig.update_layout(
-    title="Speed, Endurance, Explosiveness by age bucket (% of each metric's own peak)",
-    xaxis_title="Age bucket", yaxis_title="% of metric's peak bucket",
-    barmode="group",
-    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-)
-st.plotly_chart(combined_fig, use_container_width=True)
-
-st.caption(
-    "Column meanings (v_max, pl_sum, a_sum) are inferred from Catapult "
-    "naming conventions, not yet confirmed against official "
-    "documentation — treat as relative/comparative, not verified units. "
-    "Hover over a bar to see that metric's actual raw value."
-)
-
-# ===========================================================
-# SUMMARY TABLE
-# ===========================================================
-if peak_summary:
-    st.markdown("---")
-    st.header("Peak Age Summary")
-    st.dataframe(pd.DataFrame(peak_summary), use_container_width=True, hide_index=True)
-    st.caption(
-        "This is a simple bucket-mean comparison — no significance testing "
-        "yet. The rigorous version (z-score, ROUT, mixed-effects model, "
-        "clustering) is Step 2 below."
-    )
-
-# ===========================================================
-# STEP 2 — Branquinho et al. (2025) methodology
-# "The Aging Curve: How Age Affects Physical Performance in Elite
-# Football", J. Funct. Morphol. Kinesiol. 10(4):385.
-# https://doi.org/10.3390/jfmk10040385
-#
-# Gated behind HAS_ADVANCED_LIBS — if scipy/statsmodels/sklearn aren't
-# installed on this deployment, this section shows a clear message
-# instead of crashing the whole page (Step 1 above still works either way).
-# ===========================================================
-st.markdown("---")
-st.header("Step 2 — Paper-Replicated Pipeline (Branquinho et al., 2025)")
+    sessions["position"] = sessions["player_id"].map(modal_position)
+else:
+    sessions["position"] = "ALL"  # single group = league-wide z-score, not position-stratified
 
 if not HAS_ADVANCED_LIBS:
     st.error(
-        f"This section needs `scipy`, `statsmodels`, and `scikit-learn`, "
-        f"which aren't available in this deployment right now "
-        f"(`{MISSING_LIB_ERROR}`). Step 1 above still works fully. To fix "
-        f"this section: confirm `scipy`, `statsmodels`, and `scikit-learn` "
+        f"The statistical analysis further below needs `scipy`, "
+        f"`statsmodels`, and `scikit-learn`, which aren't available in "
+        f"this deployment right now (`{MISSING_LIB_ERROR}`). The "
+        f"peer-comparison charts for each metric still work fully. To "
+        f"fix this: confirm `scipy`, `statsmodels`, and `scikit-learn` "
         f"are in requirements.txt on GitHub (not just locally), then "
         f"reboot/redeploy the app."
     )
-else:
-    st.caption(
-        "Following: Branquinho, L. et al. (2025). The Aging Curve: How Age "
-        "Affects Physical Performance in Elite Football. J. Funct. "
-        "Morphol. Kinesiol. 10(4), 385. https://doi.org/10.3390/jfmk10040385"
+
+method_b_results = {}
+
+# ===========================================================
+# ONE CONSOLIDATED SECTION PER METRIC — peer-comparison chart +
+# statistical analysis, combined under a single heading (previously
+# split across two separate page sections for the same metric).
+# ===========================================================
+for domain_name, metric_col in DOMAINS.items():
+    st.markdown("---")
+    st.subheader(domain_name)
+
+    with st.expander("ℹ️ What does this show and how is it calculated?"):
+        st.markdown(METRIC_DEFINITIONS[domain_name])
+        st.markdown(
+            "**Peer comparison chart:** each dot is one player's average "
+            f"{domain_name.lower()} value across their own recorded "
+            "sessions, among players in the same age bucket as "
+            f"{player_name}. The diamond marks {player_name}'s own "
+            "average. Percentile = the share of those peers whose value "
+            "was lower, × 100."
+        )
+        st.markdown(
+            "**Peak age (statistical panel):** players are split into "
+            "groups by k-means clustering on their z-scored session "
+            "values (the group count that best separates the data, by "
+            "silhouette score, is used). Peak age is the average age of "
+            "whichever group has the higher average z-score. ANOVA "
+            "p-value and effect size (η²) describe how much that "
+            "grouping explains variation in the metric — note that "
+            "because the groups are formed FROM the same z-score being "
+            "tested, a low p-value/large effect size here partly "
+            "reflects how the split was built, not necessarily a "
+            "genuine age effect on its own. The mixed-effects model "
+            "(age bucket + position, with each player's own baseline "
+            "accounted for) is a more independent check of the same "
+            "question."
+        )
+
+    dom_data_all = sessions.dropna(subset=[metric_col])
+    if dom_data_all.empty:
+        st.info(f"No {domain_name.lower()} data available.")
+        continue
+
+    # -----------------------------------------------------------
+    # Peer comparison: this player vs. others in the same age bucket
+    # (replaces the earlier single combined "% of peak bucket" bar
+    # chart — a distribution + percentile view, matching the
+    # player-vs-peers approach used elsewhere in this project).
+    # -----------------------------------------------------------
+    player_avg_by_player = dom_data_all.groupby("player_id")[metric_col].mean().reset_index()
+    latest_bucket_by_player = (
+        dom_data_all.sort_values("date").groupby("player_id")["age_bucket"].last()
+    )
+    player_avg_by_player["age_bucket"] = player_avg_by_player["player_id"].map(latest_bucket_by_player)
+
+    if player_bucket is not None:
+        peer_group = player_avg_by_player[player_avg_by_player["age_bucket"] == player_bucket]
+        peer_group_label = f"the {player_bucket} age bucket"
+    else:
+        peer_group = player_avg_by_player
+        peer_group_label = "all tracked players (age bucket unavailable for this player)"
+
+    if len(peer_group) < 5:
+        st.info(f"Not enough players in {peer_group_label} to build a distribution for {domain_name}.")
+    else:
+        dist_fig = go.Figure()
+        dist_fig.add_trace(go.Box(
+            x=peer_group[metric_col], name=str(player_bucket) if player_bucket is not None else "All players",
+            boxpoints="all", jitter=0.6, pointpos=0,
+            marker_color="lightgray", line_color="lightgray", fillcolor="rgba(0,0,0,0)",
+        ))
+
+        player_row = player_avg_by_player[player_avg_by_player["player_id"] == player_id]
+        percentile = None
+        if not player_row.empty:
+            player_value = player_row[metric_col].iloc[0]
+            dist_fig.add_trace(go.Scatter(
+                x=[player_value], y=[str(player_bucket) if player_bucket is not None else "All players"],
+                mode="markers", marker=dict(size=16, color="crimson", symbol="diamond"),
+                name=player_name,
+            ))
+            percentile = float((peer_group[metric_col] < player_value).mean() * 100)
+
+        dist_fig.update_layout(
+            title=f"{domain_name} vs. {peer_group_label}",
+            xaxis_title=domain_name, height=220, showlegend=True,
+        )
+        st.plotly_chart(dist_fig, use_container_width=True)
+
+        if percentile is not None:
+            st.metric(f"{domain_name} percentile", f"{percentile:.0f}th percentile")
+            if percentile >= 75:
+                interp = f"{player_name} is near the top of {peer_group_label} for {domain_name.lower()}."
+            elif percentile >= 40:
+                interp = f"{player_name} sits around the middle of {peer_group_label} for {domain_name.lower()}."
+            else:
+                interp = f"{player_name} is in the lower portion of {peer_group_label} for {domain_name.lower()}."
+            st.caption(interp)
+        else:
+            st.info(f"{player_name} has no {domain_name.lower()} data to compare against peers.")
+
+    # -----------------------------------------------------------
+    # Statistical analysis
+    # -----------------------------------------------------------
+    if not HAS_ADVANCED_LIBS:
+        continue
+
+    dom_data = sessions.dropna(subset=[metric_col, "position"]).copy()
+    if dom_data.empty:
+        continue
+
+    dom_data["z"] = dom_data.groupby("position")[metric_col].transform(
+        lambda s: (s - s.mean()) / s.std() if s.std() > 0 else 0
+    )
+    dom_data = dom_data[dom_data["z"].abs() < 3]  # exclude extreme outliers
+
+    if len(dom_data) < 30 or dom_data["player_id"].nunique() < 10:
+        st.warning(f"Not enough data for {domain_name} to run the statistical analysis reliably.")
+        continue
+
+    try:
+        mlm = smf.mixedlm(
+            "z ~ C(age_bucket) + C(position)", data=dom_data, groups=dom_data["player_id"]
+        ).fit()
+        mlm_summary = mlm.summary().tables[1]
+    except Exception as e:
+        mlm = None
+        st.info(f"Mixed-effects model could not be fit: {e}")
+
+    X = dom_data[["z"]].values
+    sil_scores = {}
+    for k in [2, 3, 4]:
+        if len(dom_data) > k:
+            labels_k = KMeans(n_clusters=k, n_init=10, random_state=0).fit_predict(X)
+            if len(set(labels_k)) > 1:
+                sil_scores[k] = silhouette_score(X, labels_k)
+    best_k = max(sil_scores, key=sil_scores.get) if sil_scores else 3
+
+    kmeans = KMeans(n_clusters=best_k, n_init=10, random_state=0)
+    dom_data["cluster"] = kmeans.fit_predict(X)
+
+    cluster_stats = dom_data.groupby("cluster").agg(
+        mean_age=("age", "mean"),
+        age_ci=("age", lambda s: 1.96 * s.std() / np.sqrt(len(s)) if len(s) > 1 else 0),
+        mean_z=("z", "mean"),
+        n=("z", "count"),
+    ).sort_values("mean_z", ascending=False)
+
+    peak_cluster = cluster_stats.index[0]
+    peak_age_b = cluster_stats.loc[peak_cluster, "mean_age"]
+    peak_ci = cluster_stats.loc[peak_cluster, "age_ci"]
+
+    groups_for_anova = [dom_data[dom_data["cluster"] == c]["z"].values for c in cluster_stats.index]
+    f_stat, anova_p = stats.f_oneway(*groups_for_anova)
+    grand_mean = dom_data["z"].mean()
+    ss_between = sum(len(g) * (g.mean() - grand_mean) ** 2 for g in groups_for_anova)
+    ss_total = sum((dom_data["z"] - grand_mean) ** 2)
+    eta_sq = ss_between / ss_total if ss_total > 0 else 0
+
+    method_b_results[domain_name] = {
+        "peak_age": float(peak_age_b),
+        "peak_age_ci": float(peak_ci),
+        "n_clusters": int(best_k),
+        "anova_p_value": float(anova_p),
+        "eta_squared": float(eta_sq),
+    }
+
+    c1, c2, c3 = st.columns(3)
+    c1.metric(
+        "Peak age (higher-performing group)", f"{peak_age_b:.1f} ± {peak_ci:.1f}",
+        help="Average age of the cluster with the higher average z-score, ± its 95% confidence interval.",
+    )
+    c2.metric(
+        "ANOVA p-value", f"{anova_p:.4f}",
+        help="Tests whether the two clusters' z-scores genuinely differ. See the caveat above about circularity.",
+    )
+    c3.metric(
+        "Effect size (η²)", f"{eta_sq:.3f}",
+        help="Share of total z-score variation explained by the cluster split (0-1). Same caveat applies.",
     )
 
-    has_position = "primary_position" in con.execute("DESCRIBE lineups").df()["column_name"].values
-    if not has_position:
-        st.warning(
-            "`primary_position` not found in lineups.parquet — position-"
-            "stratified z-scoring below will be skipped (uses league-wide "
-            "z-scores instead of within-position, a less faithful "
-            "replication of the paper's method until the dataset is "
-            "rebuilt with that field)."
+    if mlm is not None:
+        with st.expander("Mixed-effects model detail (age bucket + position, player random intercept)"):
+            st.dataframe(mlm_summary)
+
+    fig_b = go.Figure()
+    for c in cluster_stats.index:
+        cluster_pts = dom_data[dom_data["cluster"] == c]
+        fig_b.add_trace(go.Scatter(
+            x=cluster_pts["age"], y=cluster_pts["z"],
+            mode="markers", marker=dict(size=5, opacity=0.35),
+            name=f"Cluster {c} (mean age {cluster_stats.loc[c, 'mean_age']:.1f})",
+        ))
+        fig_b.add_vline(x=cluster_stats.loc[c, "mean_age"], line_dash="dot", line_color="gray", opacity=0.5)
+
+    player_pts = dom_data[dom_data["player_id"] == player_id]
+    if not player_pts.empty:
+        fig_b.add_trace(go.Scatter(
+            x=player_pts["age"], y=player_pts["z"],
+            mode="markers", marker=dict(size=12, color="gold", line=dict(width=1, color="black")),
+            name=f"{player_name}'s sessions",
+        ))
+
+    fig_b.add_vline(x=peak_age_b, line_dash="dash", line_color="crimson",
+                     annotation_text=f"Peak: {peak_age_b:.1f}y")
+    fig_b.update_layout(
+        title=f"{domain_name} — age vs. z-score, clustered (gold = {player_name})",
+        xaxis_title="Age", yaxis_title=f"{domain_name} z-score",
+    )
+    st.plotly_chart(fig_b, use_container_width=True)
+
+    st.caption(
+        f"Peak age for {domain_name.lower()} in this data is "
+        f"{peak_age_b:.1f} years (±{peak_ci:.1f}), based on {best_k} "
+        f"cluster(s) found in the z-scored session data. "
+        + (
+            f"{player_name}'s own sessions are marked in gold above."
+            if not player_pts.empty else
+            f"{player_name} has no sessions in this analysis to highlight."
         )
+    )
 
-    if has_position:
-        pos_df = con.execute("""
-            SELECT player_id, primary_position, COUNT(*) AS n
-            FROM lineups WHERE primary_position IS NOT NULL
-            GROUP BY player_id, primary_position
-        """).df()
-        modal_position = (
-            pos_df.sort_values("n", ascending=False)
-            .drop_duplicates(subset=["player_id"])
-            .set_index("player_id")["primary_position"]
-        )
-        sessions["position"] = sessions["player_id"].map(modal_position)
-    else:
-        sessions["position"] = "ALL"  # single group = league-wide z-score, not position-stratified
+# ===========================================================
+# OVERALL SUMMARY
+# ===========================================================
+if method_b_results:
+    st.markdown("---")
+    st.subheader("Peak Ages by Metric")
+    st.dataframe(pd.DataFrame(method_b_results).T, use_container_width=True)
+    st.caption(
+        "Peak age (from the clustering analysis above) for each metric, side by side."
+    )
 
-    method_b_results = {}
-
-    for domain_name, metric_col in DOMAINS.items():
-        st.markdown("---")
-        st.subheader(f"{domain_name} ({metric_col})")
-
-        dom_data = sessions.dropna(subset=[metric_col, "position"]).copy()
-        if dom_data.empty:
-            st.info(f"No {domain_name.lower()} data available.")
-            continue
-
-        # z-score WITHIN position (or league-wide if position unavailable)
-        dom_data["z"] = dom_data.groupby("position")[metric_col].transform(
-            lambda s: (s - s.mean()) / s.std() if s.std() > 0 else 0
-        )
-
-        # ROUT outlier removal: exclude |z| >= 3, per the paper's stated rule
-        n_before = len(dom_data)
-        dom_data = dom_data[dom_data["z"].abs() < 3]
-        n_removed = n_before - len(dom_data)
-        st.caption(f"ROUT outlier removal: {n_removed} of {n_before} sessions excluded (|z| ≥ 3).")
-
-        if len(dom_data) < 30 or dom_data["player_id"].nunique() < 10:
-            st.warning(f"Not enough data for {domain_name} to run this pipeline reliably.")
-            continue
-
-        # mixed linear model: z ~ age_bucket + position, player random intercept
-        try:
-            mlm = smf.mixedlm(
-                "z ~ C(age_bucket) + C(position)", data=dom_data, groups=dom_data["player_id"]
-            ).fit()
-            mlm_summary = mlm.summary().tables[1]
-        except Exception as e:
-            mlm = None
-            st.info(f"Mixed linear model could not be fit: {e}")
-
-        # hierarchical clustering (via silhouette) + k-means
-        X = dom_data[["z"]].values
-        sil_scores = {}
-        for k in [2, 3, 4]:
-            if len(dom_data) > k:
-                labels_k = KMeans(n_clusters=k, n_init=10, random_state=0).fit_predict(X)
-                if len(set(labels_k)) > 1:
-                    sil_scores[k] = silhouette_score(X, labels_k)
-        best_k = max(sil_scores, key=sil_scores.get) if sil_scores else 3
-
-        kmeans = KMeans(n_clusters=best_k, n_init=10, random_state=0)
-        dom_data["cluster"] = kmeans.fit_predict(X)
-
-        cluster_stats = dom_data.groupby("cluster").agg(
-            mean_age=("age", "mean"),
-            age_ci=("age", lambda s: 1.96 * s.std() / np.sqrt(len(s)) if len(s) > 1 else 0),
-            mean_z=("z", "mean"),
-            n=("z", "count"),
-        ).sort_values("mean_z", ascending=False)
-
-        peak_cluster = cluster_stats.index[0]
-        peak_age_b = cluster_stats.loc[peak_cluster, "mean_age"]
-        peak_ci = cluster_stats.loc[peak_cluster, "age_ci"]
-
-        st.caption(
-            f"Silhouette scores by k: {', '.join(f'{k}={v:.2f}' for k, v in sil_scores.items())} "
-            f"— using k={best_k}."
-        )
-
-        # one-way ANOVA + eta-squared (Duncan's post-hoc not available in
-        # Python's standard stats libraries — omitted here rather than
-        # substituting silently; Tukey HSD is a reasonable addition if
-        # this needs a formal pairwise test later)
-        groups_for_anova = [dom_data[dom_data["cluster"] == c]["z"].values for c in cluster_stats.index]
-        f_stat, anova_p = stats.f_oneway(*groups_for_anova)
-        grand_mean = dom_data["z"].mean()
-        ss_between = sum(len(g) * (g.mean() - grand_mean) ** 2 for g in groups_for_anova)
-        ss_total = sum((dom_data["z"] - grand_mean) ** 2)
-        eta_sq = ss_between / ss_total if ss_total > 0 else 0
-
-        method_b_results[domain_name] = {
-            "peak_age": float(peak_age_b),
-            "peak_age_ci": float(peak_ci),
-            "n_clusters": int(best_k),
-            "anova_p_value": float(anova_p),
-            "eta_squared": float(eta_sq),
-        }
-
-        c1, c2, c3 = st.columns(3)
-        c1.metric("Peak age (best cluster)", f"{peak_age_b:.1f} ± {peak_ci:.1f}")
-        c2.metric("ANOVA p-value", f"{anova_p:.4f}")
-        c3.metric("Effect size (η²)", f"{eta_sq:.3f}")
-
-        if mlm is not None:
-            with st.expander("Mixed linear model summary (z ~ age_bucket + position, player random intercept)"):
-                st.dataframe(mlm_summary)
-
-        # chart: age vs z, colored by cluster, selected player highlighted
-        fig_b = go.Figure()
-        for c in cluster_stats.index:
-            cluster_pts = dom_data[dom_data["cluster"] == c]
-            fig_b.add_trace(go.Scatter(
-                x=cluster_pts["age"], y=cluster_pts["z"],
-                mode="markers", marker=dict(size=5, opacity=0.35),
-                name=f"Cluster {c} (mean age {cluster_stats.loc[c, 'mean_age']:.1f})",
-            ))
-            fig_b.add_vline(x=cluster_stats.loc[c, "mean_age"], line_dash="dot", line_color="gray", opacity=0.5)
-
-        player_pts = dom_data[dom_data["player_id"] == player_id]
-        if not player_pts.empty:
-            fig_b.add_trace(go.Scatter(
-                x=player_pts["age"], y=player_pts["z"],
-                mode="markers", marker=dict(size=12, color="gold", line=dict(width=1, color="black")),
-                name=f"{player_name}'s sessions",
-            ))
-
-        fig_b.add_vline(x=peak_age_b, line_dash="dash", line_color="crimson",
-                         annotation_text=f"Peak: {peak_age_b:.1f}y")
-        fig_b.update_layout(
-            title=f"{domain_name} — age vs. z-score, clustered (gold = {player_name})",
-            xaxis_title="Age", yaxis_title=f"{domain_name} z-score",
-        )
-        st.plotly_chart(fig_b, use_container_width=True)
-
-    if method_b_results:
-        st.markdown("---")
-        st.subheader("Step 2 Summary — Peak Ages by Domain")
-        st.dataframe(pd.DataFrame(method_b_results).T, use_container_width=True)
-
-        verdict_record = {
-            "hypothesis": "H3 — Age Optimization",
-            "method_b": {
-                "citation": "Branquinho et al. (2025), J. Funct. Morphol. Kinesiol. 10(4):385",
-                "domains": method_b_results,
-                "last_computed": datetime.now(timezone.utc).isoformat(),
-            },
-        }
-        with open("verdict_h3.json", "w") as f:
-            json.dump(verdict_record, f, indent=2)
+    verdict_record = {
+        "hypothesis": "H3 — Age Optimization",
+        "method_b": {
+            "domains": method_b_results,
+            "last_computed": datetime.now(timezone.utc).isoformat(),
+        },
+    }
+    with open("verdict_h3.json", "w") as f:
+        json.dump(verdict_record, f, indent=2)
