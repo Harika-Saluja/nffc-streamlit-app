@@ -124,7 +124,7 @@ players["has_move"] = players["has_move"].fillna(False)
 players["display_label"] = players["player_name"] + players["has_move"].map({True: " 🟢", False: " 🔴"})
 
 selected_label = st.sidebar.selectbox("Select Player", players["display_label"])
-st.sidebar.caption("🟢 = moved leagues within the tracked window · 🔴 = no detected move")
+st.sidebar.caption("🟢 : moved leagues within the tracked window · 🔴 : no detected move")
 
 matched = players.loc[players["display_label"] == selected_label]
 if matched.empty:
