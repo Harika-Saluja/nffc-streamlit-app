@@ -478,70 +478,35 @@ if method_b_results:
     )
 
     st.markdown("---")
-    st.subheader("Overall Peak Age Result")
-    st.caption(
-        "The age bucket where performance was/is best for each metric, "
-        "based on the clustering analysis above — not tied to this "
-        "player's own current age."
-    )
+    st.subheader(f"Overall Peak Age Result for {player_name}")
 
-    per_metric = []
-    for domain_name, res in method_b_results.items():
-        peak_age = res["peak_age"]
-        anova_p = res["anova_p_value"]
-        eta_sq = res["eta_squared"]
-        peak_bucket = pd.cut([peak_age], bins=AGE_BANDS, labels=AGE_BAND_LABELS, right=False)[0]
-
-        if anova_p < 0.05 and eta_sq >= 0.06:
-            dot, confidence, weight = "🟢", "strong statistical support", 1.0
-        elif anova_p < 0.05:
-            dot, confidence, weight = "🟡", "some statistical support", 0.5
-        else:
-            dot, confidence, weight = "🔴", "not statistically significant", 0.0
-
-        per_metric.append({"domain": domain_name, "peak_age": peak_age, "weight": weight})
-
-        st.write(
-            f"{dot} **{domain_name}** — best age bucket: **{peak_bucket}** "
-            f"(peak age {peak_age:.1f}y, {confidence})"
-        )
-
-    st.caption(
-        "🟢 = statistically significant with a sizeable effect · 🟡 = "
-        "significant but a small effect · 🔴 = not statistically "
-        "significant. This significance comes from the same "
-        "clustering-based ANOVA flagged in each metric's own "
-        "explanation above, so treat it with the same caution."
-    )
-
-    # --- Combine all three metrics into ONE overall age bucket. The
-    # three confidence dots aren't just decoration here — they set how
-    # much each metric counts toward the combined peak age: a 🟢 metric
-    # counts fully, 🟡 counts at half weight, 🔴 doesn't count at all
-    # (its peak age isn't statistically trustworthy on its own). ---
-    total_weight = sum(m["weight"] for m in per_metric)
-    if total_weight > 0:
-        combined_peak_age = sum(m["peak_age"] * m["weight"] for m in per_metric) / total_weight
-        weight_note = (
-            "Weighted by confidence — 🟢 metrics count fully, 🟡 metrics "
-            "count at half weight, 🔴 metrics aren't counted at all."
+    if player_current_age is None:
+        st.info(
+            f"{player_name} has no matched Catapult sessions, so their "
+            f"own age can't be compared against these peak ages."
         )
     else:
-        combined_peak_age = sum(m["peak_age"] for m in per_metric) / len(per_metric)
-        weight_note = (
-            "None of the three metrics had statistically significant "
-            "support, so this falls back to a plain average of all "
-            "three peak ages instead — treat this combined result with "
-            "extra caution."
-        )
-    combined_bucket = pd.cut([combined_peak_age], bins=AGE_BANDS, labels=AGE_BAND_LABELS, right=False)[0]
+        st.write(f"**{player_name}'s current age:** {player_current_age:.1f}")
+        for domain_name, res in method_b_results.items():
+            peak_age = res["peak_age"]
+            distance = abs(player_current_age - peak_age)
+            if distance <= 1:
+                dot, status = "🟢", "at/near peak age"
+            elif distance <= 3:
+                dot, status = "🟡", "approaching or past peak age"
+            else:
+                dot, status = "🔴", "well before or after peak age"
+            st.write(
+                f"{dot} **{domain_name}** — peak age {peak_age:.1f}y, "
+                f"{status} ({distance:.1f} years from their own age)"
+            )
 
-    st.markdown("---")
-    st.markdown(f"### 🏆 Combined best-performance age bucket: **{combined_bucket}**")
-    st.caption(
-        f"Combined peak age ≈ {combined_peak_age:.1f}y, combining Speed, "
-        f"Endurance, and Explosiveness above. {weight_note}"
-    )
+        st.caption(
+            "🟢 = within 1 year of peak age · 🟡 = within 1–3 years · "
+            "🔴 = more than 3 years away. Based on the peak ages computed "
+            "above for each metric — the same clustering caveat noted "
+            "in each metric's own explanation applies here too."
+        )
 
     verdict_record = {
         "hypothesis": "H3 — Age Optimization",
