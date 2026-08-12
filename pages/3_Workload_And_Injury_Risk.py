@@ -12,12 +12,59 @@ from datetime import datetime, timezone
 # Page config
 # -------------------------------
 st.set_page_config(page_title="Workload & Injury Risk", layout="wide")
-st.title("Workload & Injury Risk")
-st.caption(
-    "H2: Higher physical load in the period before an injury is associated "
-    "with increased injury likelihood. Uses Catapult training-load data "
-    "joined to injury records via the identity crosswalk."
-)
+st.title("WORKLOAD & INJURY RISK")
+
+# -------------------------------
+# Shared term definitions (reused everywhere these appear)
+# -------------------------------
+LOAD_METRIC_DEFINITIONS = {
+    "Sprint Load (sl_sum)": (
+        "Inferred from Catapult naming conventions as a cumulative "
+        "sprint-distance/intensity figure per session (`sl_sum`) — not "
+        "yet confirmed against official documentation."
+    ),
+    "Acceleration Load (a_sum)": (
+        "Inferred as a cumulative high-intensity acceleration figure "
+        "per session (`a_sum`) — not yet confirmed against official "
+        "documentation."
+    ),
+    "Player Load (pl_sum)": (
+        "Inferred as a cumulative player-load figure per session, "
+        "summed from GPS/accelerometer data (`pl_sum`) — not yet "
+        "confirmed against official documentation."
+    ),
+    "Max Heart Rate (hr_max)": (
+        "The player's maximum recorded heart rate for that session "
+        "(`hr_max`) — not yet confirmed against official documentation."
+    ),
+}
+LOAD_METRIC_HELP = "\n\n".join(f"**{k}** — {v}" for k, v in LOAD_METRIC_DEFINITIONS.items())
+
+RAW_COL_DEFINITIONS = {
+    "sl_sum": LOAD_METRIC_DEFINITIONS["Sprint Load (sl_sum)"],
+    "a_sum": LOAD_METRIC_DEFINITIONS["Acceleration Load (a_sum)"],
+    "pl_sum": LOAD_METRIC_DEFINITIONS["Player Load (pl_sum)"],
+    "hr_max": LOAD_METRIC_DEFINITIONS["Max Heart Rate (hr_max)"],
+}
+
+
+def sup_help(term: str, definition: str) -> str:
+    """A term followed by a small, always-visible, superscript '?' that
+    shows the definition as a native browser tooltip on hover (a plain
+    HTML `title` attribute — works regardless of Streamlit version,
+    unlike dataframe column tooltips, which only appear on hover with
+    no visible marker at all)."""
+    safe_def = definition.replace('"', "&quot;")
+    return (
+        f'<span style="white-space:nowrap;">{term}'
+        f'<sup title="{safe_def}" style="cursor:help; color:#888; margin-left:2px;">❓</sup>'
+        f'</span>'
+    )
+
+
+def term_glossary_line(terms: dict) -> str:
+    return " &nbsp;&nbsp;&nbsp; ".join(sup_help(t, d) for t, d in terms.items())
+
 
 # -------------------------------
 # Load data
@@ -32,7 +79,10 @@ con.execute("""
 """)
 
 # -------------------------------
-# Sidebar – full player roster
+# Sidebar – full player roster, with a three-state status dot:
+# 🟢 has training-load data AND a recorded injury
+# 🟡 has training-load data, no recorded injury
+# 🔴 no training-load data at all (many players won't have any)
 # -------------------------------
 st.sidebar.title("Player Selector")
 
@@ -44,10 +94,41 @@ if all_players.empty:
     st.error("No players found in lineups.parquet.")
     st.stop()
 
-player_name = st.sidebar.selectbox("Select Player", all_players["player_name"])
-player_id = int(
-    all_players.loc[all_players["player_name"] == player_name, "player_id"].iloc[0]
+catapult_players = con.execute("""
+    SELECT DISTINCT x.statsbomb_player_id AS player_id
+    FROM catapult c JOIN crosswalk x ON c.athlete_id = x.athlete_id
+    WHERE x.statsbomb_player_id IS NOT NULL
+""").df()["player_id"]
+
+injury_players = con.execute("""
+    SELECT DISTINCT statsbomb_id AS player_id FROM injuries WHERE statsbomb_id IS NOT NULL
+""").df()["player_id"]
+
+all_players["has_catapult"] = all_players["player_id"].isin(catapult_players)
+all_players["has_injury"] = all_players["player_id"].isin(injury_players)
+
+
+def status_dot(row) -> str:
+    if not row["has_catapult"]:
+        return "🔴"
+    return "🟢" if row["has_injury"] else "🟡"
+
+
+all_players["display_label"] = all_players["player_name"] + " " + all_players.apply(status_dot, axis=1)
+
+selected_label = st.sidebar.selectbox("Select Player", all_players["display_label"])
+st.sidebar.caption(
+    "🟢 : has training-load data and a recorded injury · 🟡 : has "
+    "training-load data, no recorded injury · 🔴 : no training-load "
+    "data at all"
 )
+
+matched_player = all_players.loc[all_players["display_label"] == selected_label]
+if matched_player.empty:
+    st.error("Selected player not found.")
+    st.stop()
+player_id = int(matched_player["player_id"].iloc[0])
+player_name = matched_player["player_name"].iloc[0]
 
 st.markdown("---")
 st.header(player_name)
@@ -71,115 +152,140 @@ injury_df = con.execute(f"""
     ORDER BY "from"
 """).df()
 
-if load_df.empty:
-    st.info("No Catapult sessions found for this player.")
-    st.stop()
-
-load_df["date"] = pd.to_datetime(load_df["date"])
-if not injury_df.empty:
-    injury_df["injury_start"] = pd.to_datetime(injury_df["injury_start"])
-    injury_df["injury_end"] = pd.to_datetime(injury_df["injury_end"])
-
-# -------------------------------
-# Workload trend with injury periods shaded
-# -------------------------------
-st.subheader("Training Load Over Time")
-
-metric_choice = st.radio(
-    "Load metric:",
-    ["Sprint Load (sl_sum)", "Acceleration Load (a_sum)",
-     "Player Load (pl_sum)", "Max Heart Rate (hr_max)"],
-    horizontal=True,
-)
 metric_map = {
     "Sprint Load (sl_sum)": "sl_sum",
     "Acceleration Load (a_sum)": "a_sum",
     "Player Load (pl_sum)": "pl_sum",
     "Max Heart Rate (hr_max)": "hr_max",
 }
-col = metric_map[metric_choice]
 
-fig = go.Figure()
-fig.add_trace(go.Scatter(
-    x=load_df["date"], y=load_df[col],
-    mode="lines+markers", name=metric_choice,
-))
-
-for _, row in injury_df.iterrows():
-    fig.add_vrect(
-        x0=row["injury_start"], x1=row["injury_end"],
-        fillcolor="red", opacity=0.15, line_width=0,
-        annotation_text=row["reason"] if pd.notna(row["reason"]) else "Injury",
-        annotation_position="top left",
+if load_df.empty:
+    # NOTE: the pooled, population-level analysis further down doesn't
+    # depend on this specific player having data — only these two
+    # player-specific sections do. Skipping just these (instead of
+    # st.stop()-ing the whole page) means the pooled Statistical
+    # Analysis section, and its verdict_h2.json write, still run even
+    # when the currently-selected player is a 🔴 (no matched data).
+    st.info(
+        f"No training-load (Catapult) data is available for "
+        f"{player_name} at the moment — the player-specific charts "
+        f"below are skipped for them, but the pooled analysis further "
+        f"down doesn't depend on this player and still runs."
     )
-
-fig.update_layout(
-    title=f"{player_name} — {metric_choice} (red = injury period)",
-    xaxis_title="Date", yaxis_title=metric_choice,
-    hovermode="x unified",
-)
-st.plotly_chart(fig, use_container_width=True)
-
-st.caption(
-    "Column meanings (hr, sl, a, pl) are inferred from Catapult naming "
-    "conventions and not yet confirmed against official documentation — "
-    "treat as relative/comparative, not verified absolute units."
-)
-
-# -------------------------------
-# Pre-injury load vs. season-average load (single player, illustrative)
-# -------------------------------
-st.markdown("---")
-st.subheader("Pre-Injury Load Check (This Player Only)")
-
-PLAYER_WINDOW_DAYS = st.slider("Look-back window before injury (days)", 3, 28, 14)
-
-if injury_df.empty:
-    st.info("No injury records for this player — nothing to compare.")
 else:
-    season_avg = load_df[col].mean()
-    rows = []
-    for _, row in injury_df.iterrows():
-        window_start = row["injury_start"] - pd.Timedelta(days=PLAYER_WINDOW_DAYS)
-        pre_injury = load_df[
-            (load_df["date"] >= window_start) & (load_df["date"] < row["injury_start"])
-        ]
-        rows.append({
-            "Injury": row["reason"] if pd.notna(row["reason"]) else "Unspecified",
-            "Date": row["injury_start"].date(),
-            "Days Missed": row["days_missed"],
-            f"Avg {metric_choice} ({PLAYER_WINDOW_DAYS}d before)": (
-                round(pre_injury[col].mean(), 2) if not pre_injury.empty else None
-            ),
-            "Season Avg": round(season_avg, 2),
-        })
+    load_df["date"] = pd.to_datetime(load_df["date"])
+    if not injury_df.empty:
+        injury_df["injury_start"] = pd.to_datetime(injury_df["injury_start"])
+        injury_df["injury_end"] = pd.to_datetime(injury_df["injury_end"])
 
-    result_df = pd.DataFrame(rows)
-    st.dataframe(result_df, use_container_width=True)
+    # -------------------------------
+    # Workload trend with injury periods shaded
+    # -------------------------------
+    st.subheader("Training Load Over Time")
+
+    with st.expander("ℹ️ What does this chart show?"):
+        st.markdown(LOAD_METRIC_HELP)
+        st.markdown(
+            "The line shows the selected load metric across all of this "
+            "player's recorded training sessions. Shaded red regions mark "
+            "periods when they were injured, based on recorded injury spells."
+        )
+
+    metric_choice = st.radio(
+        "Load metric:", list(metric_map.keys()), horizontal=True, help=LOAD_METRIC_HELP,
+    )
+    col = metric_map[metric_choice]
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=load_df["date"], y=load_df[col],
+        mode="lines+markers", name=metric_choice,
+    ))
+
+    for _, row in injury_df.iterrows():
+        fig.add_vrect(
+            x0=row["injury_start"], x1=row["injury_end"],
+            fillcolor="red", opacity=0.15, line_width=0,
+            annotation_text=row["reason"] if pd.notna(row["reason"]) else "Injury",
+            annotation_position="top left",
+        )
+
+    fig.update_layout(
+        title=f"{player_name} — {metric_choice} (red = injury period)",
+        xaxis_title="Date", yaxis_title=metric_choice,
+        hovermode="x unified",
+    )
+    st.plotly_chart(fig, use_container_width=True)
 
     st.caption(
-        "Compares this player's average load in the window before each "
-        "injury to their season average. This is illustrative for one "
-        "player only — not statistical evidence on its own. The real test, "
-        "pooled across every player, is below."
+        f"{player_name} has {len(injury_df)} recorded injury period(s) in "
+        f"this window." if not injury_df.empty else
+        f"{player_name} has no recorded injuries in this window."
     )
 
+    # -------------------------------
+    # Pre-injury load vs. season-average load (single player, illustrative)
+    # -------------------------------
+    st.markdown("---")
+    st.subheader("Pre-Injury Load Check (This Player Only)")
+
+    with st.expander("ℹ️ What does this table show?"):
+        st.markdown(
+            "For each of this player's recorded injuries, compares their "
+            "average training load in the N days immediately before that "
+            "injury to their overall average across all tracked sessions. "
+            "This is illustrative for this one player only — not "
+            "statistical evidence on its own. The pooled, population-level "
+            "test is further below."
+        )
+
+    PLAYER_WINDOW_DAYS = st.slider("Look-back window before injury (days)", 3, 28, 14)
+
+    if injury_df.empty:
+        st.info(f"No injury records for {player_name} — nothing to compare.")
+    else:
+        season_avg = load_df[col].mean()
+        rows = []
+        for _, row in injury_df.iterrows():
+            window_start = row["injury_start"] - pd.Timedelta(days=PLAYER_WINDOW_DAYS)
+            pre_injury = load_df[
+                (load_df["date"] >= window_start) & (load_df["date"] < row["injury_start"])
+            ]
+            rows.append({
+                "Injury": row["reason"] if pd.notna(row["reason"]) else "Unspecified",
+                "Date": row["injury_start"].date(),
+                "Days Missed": row["days_missed"],
+                f"Avg {metric_choice} ({PLAYER_WINDOW_DAYS}d before)": (
+                    round(pre_injury[col].mean(), 2) if not pre_injury.empty else None
+                ),
+                "Overall Avg": round(season_avg, 2),
+            })
+
+        result_df = pd.DataFrame(rows)
+        st.dataframe(result_df, use_container_width=True)
+        st.caption(
+            f"{player_name}'s pre-injury load compared to their overall "
+            f"average, across {len(rows)} recorded injury period(s)."
+        )
+
 # ===========================================================
-# STATISTICAL VERDICT — H2, pooled across ALL players
+# STATISTICAL ANALYSIS — pooled across ALL players
 # ===========================================================
 st.markdown("---")
-st.header("H2 Statistical Verdict (All Players, Pooled)")
+st.header("Statistical Analysis (All Players, Pooled)")
 
-st.markdown(
-    "**Window method:** for every training session date a player has, we "
-    "look back N days (your choice below) and sum/max their load over that "
-    "span — an *overlapping* rolling window ending on each session date "
-    "(not fixed 14-day blocks). Each window is labeled "
-    "`injury_occurred = 1` if the player picks up an injury within a short "
-    "follow-up period right after that window, otherwise `0`. Windows "
-    "falling during an existing injury are excluded, since a player who's "
-    "already out isn't generating a normal training-exposure window."
-)
+with st.expander("ℹ️ How are these player-windows built?"):
+    st.markdown(
+        "For every training session date a player has, we look back N "
+        "days (chosen below) and sum/max their load over that span — "
+        "an OVERLAPPING rolling window ending on each session date (not "
+        "fixed blocks). Each window is labeled as preceding an injury "
+        "if the player picks up an injury within a short follow-up "
+        "period right after that window, otherwise not. Windows "
+        "falling during an existing injury are excluded, since a "
+        "player who's already out isn't generating a normal "
+        "training-exposure window."
+    )
 
 WINDOW_DAYS = st.slider(
     "Sliding window size — how many days of training load to look back over (days)",
@@ -257,15 +363,23 @@ if n_injury_windows < 10 or n_total_windows - n_injury_windows < 10:
     st.stop()
 
 # -----------------------------------------------------------
-# Test 1: Mann-Whitney U
+# Load Before Injury vs. Normal Windows (Mann-Whitney U)
 # -----------------------------------------------------------
-st.subheader("Test 1 — Load Before Injury vs. Normal Windows (Mann-Whitney U)")
+st.subheader("Load Before Injury vs. Normal Windows")
+
+with st.expander("ℹ️ What does this test check?"):
+    st.markdown(
+        "Compares the distribution of load values in windows that "
+        "precede an injury against windows that don't, using the "
+        "Mann-Whitney U test — a rank-based test that doesn't assume "
+        "the data is normally distributed. p < 0.05 together with a "
+        "positive effect size means load is significantly higher in "
+        "windows that precede an injury."
+    )
 
 test_metric_choice = st.radio(
-    "Metric to test:",
-    ["Sprint Load (sl_sum)", "Acceleration Load (a_sum)",
-     "Player Load (pl_sum)", "Max Heart Rate (hr_max)"],
-    horizontal=True, key="test_metric",
+    "Metric to test:", list(metric_map.keys()), horizontal=True, key="test_metric",
+    help=LOAD_METRIC_HELP,
 )
 test_col = metric_map[test_metric_choice]
 
@@ -284,26 +398,38 @@ box_fig.update_layout(
     yaxis_title=test_metric_choice,
 )
 st.plotly_chart(box_fig, use_container_width=True)
+st.caption(
+    "Each box shows the spread of load values in that group; if the "
+    "two boxes barely overlap, load tends to be genuinely different "
+    "before an injury — the metrics below give the formal test of that."
+)
 
 verdict1 = "SUPPORTED" if u_pval < 0.05 and rank_biserial > 0 else (
     "NOT SUPPORTED" if u_pval < 0.05 else "INCONCLUSIVE")
 badge1 = {"SUPPORTED": "🔴", "NOT SUPPORTED": "🟢", "INCONCLUSIVE": "🟡"}[verdict1]
 
 c1, c2, c3 = st.columns(3)
-c1.metric("p-value", f"{u_pval:.4f}")
-c2.metric("Effect size (rank-biserial)", f"{rank_biserial:+.3f}")
-c3.metric("Verdict", f"{badge1} {verdict1}")
-
-st.caption(
-    "p < 0.05 and a positive effect size means load is significantly higher "
-    "in windows that precede an injury — consistent with H2."
-)
+c1.metric("p-value", f"{u_pval:.4f}",
+          help="Probability of seeing a difference this large by chance if there were truly no difference between the two groups. Below 0.05 is conventionally 'significant'.")
+c2.metric("Effect size (rank-biserial)", f"{rank_biserial:+.3f}",
+          help="Standardized measure of how much higher/lower pre-injury load ranks are compared to normal windows. Ranges -1 to +1; further from 0 means a bigger difference.")
+c3.metric("Verdict", f"{badge1} {verdict1}",
+          help="🔴 = load is significantly higher before injuries. 🟢 = no such pattern, or the opposite. 🟡 = inconclusive.")
 
 # -----------------------------------------------------------
-# Test 2: Logistic regression
+# Odds of Injury by Load (Logistic Regression)
 # -----------------------------------------------------------
 st.markdown("---")
-st.subheader("Test 2 — Odds of Injury by Load (Logistic Regression)")
+st.subheader("Odds of Injury by Load")
+
+with st.expander("ℹ️ What does this test check?"):
+    st.markdown(
+        "Fits a logistic regression predicting whether a window "
+        "precedes an injury, using all four load metrics at once, each "
+        "holding the others constant. An odds ratio above 1 means "
+        "higher values of that metric are associated with higher odds "
+        "of an injury following soon after; below 1 means the opposite."
+    )
 
 logit_model = smf.logit(
     "injury_occurred ~ sl_sum + a_sum + pl_sum + hr_max",
@@ -337,7 +463,23 @@ forest_fig.update_layout(
     xaxis_title="Odds ratio",
 )
 st.plotly_chart(forest_fig, use_container_width=True)
+st.caption(
+    "Each dot is one metric's odds ratio with its 95% confidence "
+    "interval. If the interval crosses the dashed line at 1, that "
+    "metric's effect isn't statistically distinguishable from 'no "
+    "effect' in this data."
+)
 
+st.markdown(
+    term_glossary_line({
+        **RAW_COL_DEFINITIONS,
+        "odds_ratio": "Multiplicative change in the odds of injury per one raw unit increase in that metric. 1 = no effect.",
+        "pval": "Probability of this odds ratio arising by chance if the true effect were zero. Below 0.05 is conventionally significant.",
+        "or_ci_low": "Lower bound of the 95% confidence interval for the odds ratio.",
+        "or_ci_high": "Upper bound of the 95% confidence interval for the odds ratio.",
+    }),
+    unsafe_allow_html=True,
+)
 st.dataframe(
     summary_df[["odds_ratio", "pval", "or_ci_low", "or_ci_high"]].round(4),
     use_container_width=True,
@@ -348,16 +490,15 @@ verdict2 = "SUPPORTED" if any_significant and (summary_df.loc[summary_df["pval"]
     "NOT SUPPORTED" if any_significant else "INCONCLUSIVE")
 badge2 = {"SUPPORTED": "🔴", "NOT SUPPORTED": "🟢", "INCONCLUSIVE": "🟡"}[verdict2]
 
-st.metric("Overall Verdict", f"{badge2} {verdict2}")
+st.metric("Overall Verdict", f"{badge2} {verdict2}",
+          help="🔴 = at least one load metric shows significantly higher odds of injury. 🟢 = none do. 🟡 = mixed/unclear.")
 
 st.caption(
-    "An odds ratio > 1 with whiskers not crossing 1 means that metric is "
-    "associated with significantly higher odds of injury in the following "
-    "window — supporting H2. NOTE: raw variables have very different "
-    "scales (pl_sum in the millions, a_sum in the hundreds), so odds "
-    "ratios here are per-raw-unit, not directly comparable across metrics "
-    "— standardizing (z-score) each predictor first would give a fairer "
-    "comparison of relative importance across metrics; not yet done here."
+    "NOTE: raw variables have very different scales (pl_sum in the "
+    "millions, a_sum in the tens), so odds ratios here are per-raw-unit "
+    "and not directly comparable across metrics — standardizing "
+    "(z-score) each predictor first would give a fairer comparison of "
+    "relative importance across metrics; not yet done here."
 )
 
 # ===========================================================
@@ -387,36 +528,39 @@ with open("verdict_h2.json", "w") as f:
     json.dump(verdict_record, f, indent=2)
 
 # ===========================================================
-# TEST 3 — U-shaped injury risk by ACWR (Bowen, 2019)
-#
-# Tests 1 & 2 above ask "is load higher before an injury" and "does
-# more load predict higher odds" — both implicitly assume a roughly
-# LINEAR relationship (more load = more risk). Bowen's thesis
-# describes a U-SHAPED relationship instead: risk rises at BOTH very
-# low ACWR (undertraining/detraining) and very high ACWR (spikes),
-# dipping in a safe middle zone. A linear logistic regression can't
-# reveal that shape — this needs binning.
-#
-# Uses fixed 7-day acute / 21-day chronic UNCOUPLED windows (the
-# standard ACWR definition), not the adjustable WINDOW_DAYS slider
-# above, since ACWR specifically means 7:28 (uncoupled: 7 + 21).
+# U-SHAPED INJURY RISK BY ACWR
 # ===========================================================
 st.markdown("---")
-st.header("Test 3 — U-Shaped Injury Risk by ACWR (Bowen, 2019)")
+st.header("U-Shaped Injury Risk by Training Load Ratio (ACWR)")
 
-st.caption(
-    "Following Bowen (2019, Section 5.03.5): uncoupled ACWR — the 21-day "
-    "chronic window excludes the 7-day acute window entirely, avoiding the "
-    "artificial correlation an overlapping window creates. Each player-date "
-    "is binned by its ACWR value; the chart shows the actual injury rate "
-    "per bin, revealing whether risk really is U-shaped rather than linear."
-)
+with st.expander("ℹ️ What is ACWR, and what does 'U-shaped' mean here?"):
+    st.markdown(
+        "**ACWR (Acute:Chronic Workload Ratio)** compares a player's "
+        "recent training load (the last 7 days — 'acute') to their "
+        "longer-term baseline (the 21 days before that — 'chronic'): "
+        "acute ÷ chronic. Around 1.0 means recent load matches their "
+        "usual baseline; well below 1 suggests undertraining; well "
+        "above 1 suggests a load spike."
+    )
+    st.markdown(
+        "**Uncoupled:** the chronic window is shifted to end 7 days "
+        "before the acute week starts, so the two windows never share "
+        "the same days — avoiding an artificial correlation that a "
+        "simple overlapping window would create."
+    )
+    st.markdown(
+        "**U-shaped hypothesis:** the two tests above assume a roughly "
+        "linear relationship — more load, more risk. This section "
+        "checks a different idea instead: that injury risk could be "
+        "elevated at BOTH extremes (undertraining AND large spikes), "
+        "with a safer zone in between — rather than rising in a "
+        "straight line. It does this by binning ACWR values and "
+        "looking at the actual injury rate in each bin."
+    )
 
 acwr_metric_choice = st.radio(
-    "Metric for ACWR:",
-    ["Sprint Load (sl_sum)", "Acceleration Load (a_sum)",
-     "Player Load (pl_sum)", "Max Heart Rate (hr_max)"],
-    horizontal=True, key="acwr_metric",
+    "Metric for ACWR:", list(metric_map.keys()), horizontal=True, key="acwr_metric",
+    help=LOAD_METRIC_HELP,
 )
 acwr_col = metric_map[acwr_metric_choice]
 
@@ -446,9 +590,6 @@ def build_acwr_dataset(metric_col: str, follow_days: int) -> pd.DataFrame:
         player_inj = all_inj[all_inj["player_id"] == pid]
 
         acute = sessions[[metric_col]].rolling("7D").sum() / 7
-        # uncoupled chronic: shift by 7 days first, THEN take a 21-day
-        # rolling sum — this makes the window end 7 days before "today",
-        # so it never overlaps the acute week
         shifted = sessions[[metric_col]].shift(freq="7D")
         chronic = shifted.rolling("21D").sum() / 21
 
@@ -506,7 +647,6 @@ else:
     )
     st.plotly_chart(ushape_fig, use_container_width=True)
 
-    # simple check: is the "safe" middle bin actually the lowest?
     if len(bin_stats) >= 3:
         safe_idx = bin_stats[bin_stats["acwr_bin"].astype(str).str.contains("safe")].index
         if len(safe_idx) > 0:
@@ -514,20 +654,21 @@ else:
             is_lowest = safe_rate == bin_stats["injury_rate"].min()
             if is_lowest:
                 st.success(
-                    "✅ The 0.8-1.3 'safe' zone has the LOWEST injury rate of all "
-                    "bins — consistent with a U-shaped relationship."
+                    "✅ The 0.8-1.3 'safe' zone has the LOWEST injury rate "
+                    "of all bins — consistent with a U-shaped relationship."
                 )
             else:
                 st.info(
-                    "The 0.8-1.3 'safe' zone is NOT the lowest-risk bin in this "
-                    "data — the U-shape pattern from Bowen (2019) isn't clearly "
-                    "replicated here, worth noting as a genuine finding rather "
-                    "than forcing the expected shape."
+                    "The 0.8-1.3 'safe' zone is NOT the lowest-risk bin in "
+                    "this data — the U-shaped pattern isn't clearly "
+                    "replicated here, worth noting as a genuine finding "
+                    "rather than forcing the expected shape."
                 )
 
     st.caption(
-        f"Bars show the actual proportion of ACWR windows (per player-date) "
-        f"that preceded an injury within {FOLLOW_DAYS} days, by ACWR bin. "
-        f"Wide confidence intervals on sparse bins (small n) should be read "
-        f"cautiously — this is exploratory, not a formal statistical test."
+        f"Bars show the actual proportion of ACWR windows (per "
+        f"player-date) that preceded an injury within {FOLLOW_DAYS} "
+        f"days, by ACWR bin. Wide confidence intervals on sparse bins "
+        f"(small n) should be read cautiously — this is exploratory, "
+        f"not a formal statistical test."
     )
