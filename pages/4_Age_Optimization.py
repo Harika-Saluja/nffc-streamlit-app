@@ -486,7 +486,7 @@ if method_b_results:
             f"own age can't be compared against these peak ages."
         )
     else:
-        st.write(f"**{player_name}'s current age:** {player_current_age:.1f}")
+        #st.write(f"**{player_name}'s current age:** {player_current_age:.1f}")
         for domain_name, res in method_b_results.items():
             peak_age = res["peak_age"]
             distance = abs(player_current_age - peak_age)
