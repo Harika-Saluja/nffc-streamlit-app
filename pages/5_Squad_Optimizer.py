@@ -414,14 +414,14 @@ else:
             use_container_width=True,
             column_config={
                 "coef": st.column_config.NumberColumn(
-                    "coef", help="Estimated effect on the chosen performance metric.",
+                    "coef ❓", help="Estimated effect on the chosen performance metric.",
                 ),
                 "std_err": st.column_config.NumberColumn(
-                    "std_err", help="Uncertainty around that estimate (standard error).",
+                    "std_err ❓", help="Uncertainty around that estimate (standard error).",
                 ),
                 "pval": st.column_config.NumberColumn(
-                    "pval", help="Probability of an effect this large by chance if the "
-                                 "true effect were zero. Below 0.05 is conventionally 'significant'.",
+                    "pval ❓", help="Probability of an effect this large by chance if the "
+                                    "true effect were zero. Below 0.05 is conventionally 'significant'.",
                 ),
             },
         )
