@@ -3,16 +3,14 @@ import duckdb
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
+import json
+from datetime import datetime, timezone
 
 # -------------------------------
 # Page config
 # -------------------------------
 st.set_page_config(page_title="League Adaptation", layout="wide")
-st.title("League Adaptation")
-st.caption(
-    "Step 1: Four-factor breakdown for a player's cross-league move — "
-    "playing style, teammate ability, league quality, and role fit."
-)
+st.title("LEAGUE ADAPTATION")
 
 # -------------------------------
 # Load data
@@ -69,26 +67,18 @@ player_seasons["events_90"] = np.where(
     np.nan,
 )
 
-# NOTE: the metric selector used to live here and quietly drove two
-# unrelated things further down the page (Factor 3's "league quality"
-# number and Panel d's percentile chart) while three other sections
-# (Panel a, Factors 1/2/4) always used all three metrics regardless.
-# It's been moved down to sit directly above Panel (d), the only place
-# it now controls — see that section for the widget itself.
 metric_map = {
     "xG per 90": ("xg_90", "xG / 90"),
     "Pass Success %": ("pass_success_avg", "Pass success (mean probability)"),
     "Events per 90": ("events_90", "Events / 90"),
 }
-# Factor 3 ("league quality") is part of the fixed four-factor
-# breakdown, not something the reader should be able to toggle, so it
-# now uses a fixed metric rather than following the (now page-scoped)
-# selector. xG/90 is the most directly interpretable attacking-output
-# proxy for "how strong is this league" among the three options.
+# Factor 3 ("league quality") is part of the fixed four-factor breakdown,
+# not something the reader should be able to toggle, so it uses a fixed
+# metric rather than following the page-scoped Panel-d selector.
 QUALITY_METRIC_COL, QUALITY_METRIC_LABEL = metric_map["xG per 90"]
 
 # -------------------------------
-# Sidebar – full player roster
+# Sidebar – full player roster, with a move indicator per player
 # -------------------------------
 st.sidebar.title("Player Selector")
 
@@ -97,15 +87,53 @@ if players.empty:
     st.error("No players found in lineups.parquet.")
     st.stop()
 
-player_name = st.sidebar.selectbox("Select Player", players["player_name"])
-matched = players.loc[players["player_name"] == player_name, "player_id"]
+
+def detect_all_league_switches(pdata: pd.DataFrame):
+    """Every genuine league switch across this player's tracked seasons —
+    a competition change between two consecutive seasons. Returns a list
+    (possibly empty, possibly with more than one entry for a player who
+    has changed leagues more than once)."""
+    seasons_sorted = sorted(pdata["season"].dropna().unique())
+    switches = []
+    for i in range(1, len(seasons_sorted)):
+        prev_leagues = set(pdata[pdata["season"] == seasons_sorted[i - 1]]["competition"].dropna())
+        curr_leagues = set(pdata[pdata["season"] == seasons_sorted[i]]["competition"].dropna())
+        if prev_leagues and curr_leagues and not (prev_leagues & curr_leagues):
+            switches.append({
+                "from_league": list(prev_leagues)[0],
+                "to_league": list(curr_leagues)[0],
+                "from_season": seasons_sorted[i - 1],
+                "to_season": seasons_sorted[i],
+            })
+    return switches
+
+
+# Precompute, for EVERY player, whether any cross-league move is
+# detected across their tracked seasons — used only to decorate the
+# sidebar selector (🟢 = moved, 🔴 = no detected move in this window).
+# Uses a plain dict comprehension (not groupby().apply(...,
+# include_groups=False)) since that kwarg needs pandas 2.2+ and this
+# needs to run on whatever pandas version is actually deployed.
+move_status = pd.Series(
+    {pid: bool(detect_all_league_switches(g)) for pid, g in player_seasons.groupby("player_id")},
+    name="has_move",
+)
+move_status.index.name = "player_id"
+players = players.merge(move_status, on="player_id", how="left")
+players["has_move"] = players["has_move"].fillna(False)
+players["display_label"] = players["player_name"] + players["has_move"].map({True: " 🟢", False: " 🔴"})
+
+selected_label = st.sidebar.selectbox("Select Player", players["display_label"])
+st.sidebar.caption("🟢 = moved leagues within the tracked window · 🔴 = no detected move")
+
+matched = players.loc[players["display_label"] == selected_label]
 if matched.empty:
     st.error("Selected player not found.")
     st.stop()
-player_id = int(matched.iloc[0])
+player_id = int(matched["player_id"].iloc[0])
+player_name = matched["player_name"].iloc[0]
 
 st.markdown("---")
-st.header(player_name)
 
 player_data = player_seasons[player_seasons["player_id"] == player_id].sort_values("season")
 
@@ -113,42 +141,55 @@ if player_data.empty:
     st.info(f"No season data available for {player_name}.")
     st.stop()
 
+# -------------------------------
+# Player header: name + earliest tracked date + full league history
+# -------------------------------
+st.header(player_name)
 
-def detect_league_switch(pdata: pd.DataFrame):
-    """First genuine league switch: competition changes between two
-    consecutive tracked seasons for this player. Returns None if the
-    player never switched leagues within the tracked window."""
-    seasons_sorted = sorted(pdata["season"].dropna().unique())
-    for i in range(1, len(seasons_sorted)):
-        prev_leagues = set(pdata[pdata["season"] == seasons_sorted[i - 1]]["competition"].dropna())
-        curr_leagues = set(pdata[pdata["season"] == seasons_sorted[i]]["competition"].dropna())
-        if prev_leagues and curr_leagues and not (prev_leagues & curr_leagues):
-            return {
-                "from_league": list(prev_leagues)[0],
-                "to_league": list(curr_leagues)[0],
-                "from_season": seasons_sorted[i - 1],
-                "to_season": seasons_sorted[i],
-            }
-    return None
+career_start_row = con.execute(f"""
+    SELECT MIN(m.match_date) AS start_date
+    FROM lineups l JOIN matches m ON l.match_id = m.match_id
+    WHERE l.player_id = {player_id}
+""").df()
+career_start_date = career_start_row["start_date"].iloc[0]
+career_start_str = (
+    pd.to_datetime(career_start_date).strftime("%d %b %Y")
+    if pd.notna(career_start_date) else "unknown"
+)
+st.caption(
+    f"Tracked in this dataset since **{career_start_str}** — earliest "
+    f"recorded match in this data, not necessarily their actual career debut."
+)
 
+all_switches = detect_all_league_switches(player_data)
 
-league_switch = detect_league_switch(player_data)
-
-if league_switch is None:
+if not all_switches:
     st.info(
-        f"No detected cross-league move for {player_name} in this dataset "
-        f"— either they stayed in one league throughout the tracked "
-        f"seasons, or the move happened outside this window. Try a "
-        f"different player known to have changed leagues (e.g. a recent "
-        f"Serie A → Premier League transfer)."
+        f"{player_name} hasn't moved leagues in this dataset's tracked "
+        f"window — either they stayed in one league throughout, or the "
+        f"move happened outside this window."
     )
     st.stop()
 
-st.success(
-    f"**Detected move:** {league_switch['from_league']} "
-    f"({league_switch['from_season']}) → {league_switch['to_league']} "
-    f"({league_switch['to_season']})"
-)
+sequence_parts = [f"{all_switches[0]['from_league']} ({all_switches[0]['from_season']})"]
+for sw in all_switches:
+    sequence_parts.append(f"{sw['to_league']} ({sw['to_season']})")
+st.success("**League history:** " + " → ".join(sequence_parts))
+
+if len(all_switches) > 1:
+    move_options = [
+        f"{sw['from_league']} ({sw['from_season']}) → {sw['to_league']} ({sw['to_season']})"
+        for sw in all_switches
+    ]
+    selected_move_idx = st.selectbox(
+        "Which move should the detailed analysis below focus on?",
+        options=list(range(len(move_options))),
+        format_func=lambda i: move_options[i],
+        index=len(move_options) - 1,  # default: most recent move
+    )
+    league_switch = all_switches[selected_move_idx]
+else:
+    league_switch = all_switches[0]
 
 before = player_data[player_data["season"] == league_switch["from_season"]]
 after = player_data[player_data["season"] == league_switch["to_season"]]
@@ -157,11 +198,6 @@ after = player_data[player_data["season"] == league_switch["to_season"]]
 # FOUR-FACTOR BREAKDOWN
 # ===========================================================
 st.header("Four-Factor Breakdown")
-st.caption(
-    "Lightweight proxies inspired by Dinsdale & Gallagher (2022) "
-    "'Transfer Portal' and Hong et al. (2025/26) 'EventGPT' — not a full "
-    "replication of either (see notes under each factor)."
-)
 
 style_cols = ["xg_90", "pass_success_avg", "events_90"]
 
@@ -246,41 +282,66 @@ c1, c2, c3, c4 = st.columns(4)
 c1.metric(
     "1. Style similarity",
     f"{style_similarity:.2f}" if style_similarity is not None else "—",
-    help="Cosine similarity (0-1) between the player's own pre-move style "
-         "vector (xG/90, pass success%, events/90) and the new league's "
-         "average that season. Higher = more natural stylistic fit.",
+    help=(
+        "**What it is:** cosine similarity between two 3-value vectors — "
+        "the player's own (xG/90, pass success %, events/90) from their "
+        "final season before the move, and the league-wide average of "
+        "those same three numbers in the destination league that season.\n\n"
+        "**How it's calculated:** cos(θ) = (A·B) / (|A|·|B|), where A is "
+        "the player's vector and B is the league-average vector. Ranges "
+        "0–1; closer to 1 means the two vectors point in a similar "
+        "direction. Note the three inputs are on very different raw "
+        "scales (events/90 is typically much larger than pass success % "
+        "or xG/90), which can pull this toward whichever input has the "
+        "largest magnitude rather than true stylistic fit."
+    ),
 )
 c2.metric(
     "2. Team ability (PPG)",
     f"{old_team_ppg:.2f} → {new_team_ppg:.2f}"
     if old_team_ppg is not None and new_team_ppg is not None else "—",
-    help="Points-per-game of the old team vs. the new team, that season.",
+    help=(
+        "**What it is:** points-per-game of the old team vs. the new "
+        "team, that season.\n\n"
+        "**How it's calculated:** 3 points for a win, 1 for a draw, 0 "
+        "for a loss, averaged across every match each team played that "
+        "season (from actual match results) — not adjusted for opponent "
+        "strength or league difficulty."
+    ),
 )
 c3.metric(
     "3. League quality (proxy)",
     f"{old_league_quality:.2f} → {new_league_quality:.2f}"
     if old_league_quality is not None and new_league_quality is not None else "—",
-    help=f"League-wide average {QUALITY_METRIC_LABEL} that season — a rough "
-         f"proxy, not a validated strength rating like a true Elo system.",
+    help=(
+        f"**What it is:** league-wide average {QUALITY_METRIC_LABEL} — "
+        f"always uses this one fixed metric, regardless of what's picked "
+        f"further down the page.\n\n"
+        f"**How it's calculated:** the mean {QUALITY_METRIC_LABEL} across "
+        f"every player who appeared in that competition that season. A "
+        f"rough proxy for league strength, not a validated rating — it's "
+        f"confounded with playing style (an expansive, attack-minded "
+        f"league reads higher here even if it isn't objectively stronger)."
+    ),
 )
 c4.metric(
     "4. Same role?",
     "Yes" if same_position else ("No" if same_position is not None else "—"),
-    help=(f"{old_pos_val or '—'} → {new_pos_val or '—'}" if has_position
-          else "primary_position not available in lineups.parquet"),
-)
-
-st.caption(
-    "These are lightweight proxies, not a replication of either cited "
-    "paper's original method — Transfer Portal's Elo-style rating system "
-    "and EventGPT's learned player embeddings both need infrastructure "
-    "this project's data doesn't have."
+    help=(
+        "**What it is:** whether the player's most common tracked "
+        "position matches before vs. after the move.\n\n"
+        "**How it's calculated:** the single `primary_position` value "
+        "logged most often across the player's matches in each season "
+        "(the position they played in the most that season) — compared "
+        "directly as text, old vs. new."
+        + (f"\n\n**Values:** {old_pos_val or '—'} → {new_pos_val or '—'}" if has_position else "")
+    ),
 )
 
 # ===========================================================
-# PAPER-STYLE VISUAL PANELS
-# Mirrors Dinsdale & Gallagher (2022) Figure 1's four-panel layout,
-# adapted to what this project's data can actually support.
+# DETAILED MOVE ANALYSIS
+# Mirrors Dinsdale & Gallagher (2022) Figure 1's panel layout, adapted
+# to what this project's data can actually support.
 # ===========================================================
 st.markdown("---")
 st.header("Detailed Move Analysis")
@@ -290,11 +351,12 @@ all_metric_labels = {"xg_90": "xG / 90", "pass_success_avg": "Pass Success %", "
 
 panel_a, panel_c = st.columns([2, 1])
 
-# --- Panel (a): multi-metric % change, before vs after ---
+# --- Predicted performance change ---
 with panel_a:
-    st.subheader("(a) Predicted Player Performance Change")
+    st.subheader("Predicted Player Performance Change")
     if before.empty or after.empty:
         st.info("Missing before/after data for this move.")
+        pct_rows = []
     else:
         pct_rows = []
         for m in all_metric_cols:
@@ -319,12 +381,35 @@ with panel_a:
                 height=300,
             )
             st.plotly_chart(bar_fig, use_container_width=True)
+
+            all_positive = all(r["pct_change"] > 0 for r in pct_rows)
+            all_negative = all(r["pct_change"] < 0 for r in pct_rows)
+            if all_positive:
+                verdict_a, badge_a = "Positive across all metrics", "🟢"
+            elif all_negative:
+                verdict_a, badge_a = "Negative across all metrics", "🔴"
+            else:
+                verdict_a, badge_a = "Mixed — improved on some metrics, declined on others", "🟡"
+
+            st.metric(
+                "Verdict",
+                f"{badge_a} {verdict_a}",
+                help=(
+                    "**What it is:** a simple summary of the bars above.\n\n"
+                    "**How it's calculated:** 🟢 = every metric's bar is "
+                    "positive (all improved after the move). 🔴 = every "
+                    "metric's bar is negative (all declined). 🟡 = a mix "
+                    "of positive and negative bars. Based only on the "
+                    "sign of each % change, not its size — a small +2% "
+                    "counts the same as a large +77% here."
+                ),
+            )
         else:
             st.info("Not enough non-zero data to compute % change.")
 
-# --- Panel (c): RAG confidence based on data volume ---
+# --- Data confidence ---
 with panel_c:
-    st.subheader("(c) Data Confidence")
+    st.subheader("Data Confidence")
 
     def rag_status(n_matches: int) -> tuple[str, str]:
         if n_matches >= 15:
@@ -334,8 +419,6 @@ with panel_c:
         else:
             return "🔴", "Red"
 
-    player_matches_before = int(before["minutes"].count()) if not before.empty else 0
-    # count real matches (not aggregated rows) for the confidence check
     player_n_matches = con.execute(f"""
         SELECT COUNT(DISTINCT l.match_id) AS n FROM lineups l JOIN matches m ON l.match_id = m.match_id
         WHERE l.player_id = {player_id} AND m.season = '{league_switch['from_season']}'
@@ -351,17 +434,45 @@ with panel_c:
         WHERE competition = '{league_switch['to_league']}' AND season = '{league_switch['to_season']}'
     """).df()["n"].iloc[0]
 
-    for label_txt, n_val, threshold_note in [
+    confidence_rows = [
         (player_name, player_n_matches, "player's own matches this season"),
         (league_switch["from_league"], old_league_n, "matches in origin league"),
         (league_switch["to_league"], new_league_n, "matches in destination league"),
-    ]:
+    ]
+    statuses = []
+    for label_txt, n_val, threshold_note in confidence_rows:
         badge, status_word = rag_status(int(n_val))
+        statuses.append(status_word)
         st.write(f"{badge} **{label_txt}**")
         st.caption(f"{int(n_val)} {threshold_note} — {status_word} confidence")
 
-# --- Panel (d): percentile vs. league distribution ---
-st.subheader("(d) Where This Player Sits vs. the New League")
+    if all(s == "Green" for s in statuses):
+        overall_conf_word, overall_conf_badge = "High", "🟢"
+        overall_conf_note = "All three sample sizes are comfortably large — these numbers aren't resting on a handful of matches."
+    elif any(s == "Red" for s in statuses):
+        overall_conf_word, overall_conf_badge = "Low", "🔴"
+        overall_conf_note = "At least one of the three samples above is small — treat this move's numbers with extra caution."
+    else:
+        overall_conf_word, overall_conf_badge = "Moderate", "🟡"
+        overall_conf_note = "Sample sizes are adequate but not large across the board — reasonable confidence, not full confidence."
+
+    st.metric(
+        "Overall data confidence",
+        f"{overall_conf_badge} {overall_conf_word}",
+        help=(
+            "**What it is:** a data-volume check, not a judgment on "
+            "whether the move itself was good — it only asks 'is there "
+            "enough underlying data to trust the numbers on this page.'\n\n"
+            "**How it's calculated:** each of the three counts above is "
+            "graded 🟢 15+ matches, 🟡 5–14, 🔴 <5. Overall confidence is "
+            "🟢 only if all three are green, 🔴 if any one is red, "
+            "otherwise 🟡."
+        ),
+    )
+    st.caption(overall_conf_note)
+
+# --- Where this player sits vs. the new league ---
+st.subheader("Where This Player Sits vs. the New League")
 
 panel_d_metric_choice = st.radio(
     "Chart metric (this chart only):",
@@ -375,6 +486,9 @@ dist_data = player_seasons[
     (player_seasons["season"] == league_switch["to_season"])
     & (player_seasons["competition"] == league_switch["to_league"])
 ][col].dropna()
+
+percentile = None
+player_value = None
 
 if len(dist_data) < 5 or after.empty:
     st.info("Not enough players in the destination league/season to build a distribution.")
@@ -395,10 +509,115 @@ else:
             name=player_name,
         ))
         strip_fig.update_layout(
-            title=f"{player_name} — {label} vs. all {league_switch['to_league']} players "
-                  f"({league_switch['to_season']}) — {percentile:.0f}th percentile",
+            title=f"{label} vs. all {league_switch['to_league']} players ({league_switch['to_season']})",
             xaxis_title=label, height=250, showlegend=True,
         )
         st.plotly_chart(strip_fig, use_container_width=True)
+
+        st.metric(
+            f"{label} percentile",
+            f"{percentile:.0f}th percentile",
+            help=(
+                "**What it is:** where the player's value on this metric "
+                "ranks against every other player in the destination "
+                "league that season (the gray dots above).\n\n"
+                "**How it's calculated:** the share of the destination "
+                "league's players whose value was LOWER than this "
+                "player's, × 100. E.g. 94th percentile = higher than 94 "
+                "out of 100 players in that league on this metric."
+            ),
+        )
+        if percentile >= 75:
+            interp = "This places them near the top of the distribution for this metric in their new league."
+        elif percentile >= 40:
+            interp = "This places them around the middle of the pack for this metric in their new league."
+        else:
+            interp = "This places them in the lower portion of the distribution for this metric in their new league."
+        st.caption(interp)
     else:
         st.info(f"{player_name} has no recorded {label} value after the move to compare.")
+
+# ===========================================================
+# OVERALL RESULT
+# ===========================================================
+st.markdown("---")
+st.header("Overall Result")
+
+summary_lines = [
+    f"**{player_name}** moved from **{league_switch['from_league']}** "
+    f"({league_switch['from_season']}) to **{league_switch['to_league']}** "
+    f"({league_switch['to_season']})."
+    + (f" This is one of {len(all_switches)} tracked league moves for this player." if len(all_switches) > 1 else ""),
+]
+
+if pct_rows:
+    summary_lines.append(f"Performance change across the three tracked metrics was **{verdict_a}** ({badge_a}).")
+
+if old_team_ppg is not None and new_team_ppg is not None:
+    if new_team_ppg > old_team_ppg:
+        direction = "a stronger"
+    elif new_team_ppg < old_team_ppg:
+        direction = "a weaker"
+    else:
+        direction = "a similarly-ranked"
+    summary_lines.append(f"They moved to {direction} team by points-per-game ({old_team_ppg:.2f} → {new_team_ppg:.2f}).")
+
+if same_position is not None:
+    summary_lines.append(f"Their tracked role **{'stayed the same' if same_position else 'changed'}** between the two seasons.")
+
+if percentile is not None and player_value is not None and pd.notna(player_value):
+    summary_lines.append(f"On {label}, they rank at the **{percentile:.0f}th percentile** of their new league.")
+
+summary_lines.append(f"Data confidence backing these numbers is **{overall_conf_word}** ({overall_conf_badge}).")
+
+for line in summary_lines:
+    st.markdown(f"- {line}")
+
+st.caption(
+    "This summary combines lightweight proxies from separate calculations "
+    "above — it is a convenience readout of this page's own numbers, not "
+    "an independently validated verdict."
+)
+
+# ===========================================================
+# SAVE VERDICT — for the Myth Verdict summary dashboard
+#
+# IMPORTANT SCOPE NOTE: unlike H2/H3/H4 (Mann-Whitney U, logistic
+# regression, ANOVA — each pooled across every player), this page is
+# fundamentally PER-PLAYER and PER-MOVE. This JSON necessarily reflects
+# only whichever player is currently selected in the sidebar, not a
+# population-level statistical test. It should be displayed on Myth
+# Verdict as "most recently viewed player move," not averaged/compared
+# against the other three hypotheses' pooled verdicts as if equivalent.
+# ===========================================================
+h1_verdict_record = {
+    "hypothesis": "H1 — League Adaptation",
+    "scope": (
+        "per-player-move (last viewed in this dashboard) — NOT a pooled "
+        "population-level test like H2/H3/H4; this evaluates one "
+        "player's one detected move only."
+    ),
+    "player_name": player_name,
+    "player_id": player_id,
+    "move": {
+        "from_league": league_switch["from_league"],
+        "from_season": league_switch["from_season"],
+        "to_league": league_switch["to_league"],
+        "to_season": league_switch["to_season"],
+    },
+    "n_total_tracked_moves_for_player": len(all_switches),
+    "performance_change_verdict": verdict_a if pct_rows else None,
+    "style_similarity": style_similarity,
+    "team_ability_ppg": {"before": old_team_ppg, "after": new_team_ppg},
+    "league_quality_proxy": {"before": old_league_quality, "after": new_league_quality},
+    "same_role": same_position,
+    "destination_percentile": (
+        {"metric": label, "value": percentile}
+        if percentile is not None and pd.notna(player_value) else None
+    ),
+    "data_confidence": overall_conf_word,
+    "last_computed": datetime.now(timezone.utc).isoformat(),
+}
+
+with open("verdict_h1.json", "w") as f:
+    json.dump(h1_verdict_record, f, indent=2, default=str)
