@@ -406,6 +406,39 @@ with st.expander("ℹ️ How is the Signing Score calculated?"):
 
 players_roster = player_seasons[["player_id", "player_name"]].drop_duplicates().sort_values("player_name")
 
+# Data/score-availability dot for these selectors: 🟢 = at least one
+# signing-score component is computable (a detected league move,
+# matched Catapult data, or performance data) · 🔴 = none of those
+# exist for this player yet, so no score can be shown.
+lightweight_ps_for_dots = con.execute("""
+    SELECT DISTINCT l.player_id, l.team_name, m.season, m.competition
+    FROM lineups l JOIN matches m ON l.match_id = m.match_id
+""").df()
+has_move_map = {pid: bool(detect_all_league_switches(g)) for pid, g in lightweight_ps_for_dots.groupby("player_id")}
+
+matched_catapult_ids = set(con.execute("""
+    SELECT DISTINCT x.statsbomb_player_id AS player_id
+    FROM catapult c JOIN crosswalk x ON c.athlete_id = x.athlete_id
+    WHERE x.statsbomb_player_id IS NOT NULL
+""").df()["player_id"])
+
+perf_ids = set(player_seasons.loc[player_seasons["xg_90"].notna(), "player_id"])
+
+
+def has_any_score_data(pid: int) -> bool:
+    return has_move_map.get(pid, False) or (pid in matched_catapult_ids) or (pid in perf_ids)
+
+
+players_roster["has_score"] = players_roster["player_id"].apply(has_any_score_data)
+players_roster["display_label"] = players_roster["player_name"] + players_roster["has_score"].map({True: " 🟢", False: " 🔴"})
+
+DOT_LEGEND = "🟢 : enough data to compute a signing score · 🔴 : not enough data yet"
+
+
+def resolve_player(label: str):
+    row = players_roster.loc[players_roster["display_label"] == label]
+    return int(row["player_id"].iloc[0]), row["player_name"].iloc[0]
+
 
 def render_player_recommendation(pid: int, pname: str):
     result = compute_signing_score(pid)
@@ -476,20 +509,23 @@ def render_player_recommendation(pid: int, pname: str):
 tab1, tab2 = st.tabs(["Single Player", "Compare Two Players"])
 
 with tab1:
-    single_name = st.selectbox("Player:", players_roster["player_name"], key="single_player")
-    single_id = int(players_roster.loc[players_roster["player_name"] == single_name, "player_id"].iloc[0])
+    st.caption(DOT_LEGEND)
+    single_label = st.selectbox("Player:", players_roster["display_label"], key="single_player")
+    single_id, single_name = resolve_player(single_label)
     render_player_recommendation(single_id, single_name)
 
 with tab2:
+    st.caption(DOT_LEGEND)
     col_a, col_b = st.columns(2)
     with col_a:
-        name_a = st.selectbox("Player A:", players_roster["player_name"], key="compare_a")
+        label_a = st.selectbox("Player A:", players_roster["display_label"], key="compare_a")
     with col_b:
-        remaining = players_roster[players_roster["player_name"] != name_a]
-        name_b = st.selectbox("Player B:", remaining["player_name"], key="compare_b")
+        _, name_a_temp = resolve_player(label_a)
+        remaining = players_roster[players_roster["player_name"] != name_a_temp]
+        label_b = st.selectbox("Player B:", remaining["display_label"], key="compare_b")
 
-    id_a = int(players_roster.loc[players_roster["player_name"] == name_a, "player_id"].iloc[0])
-    id_b = int(players_roster.loc[players_roster["player_name"] == name_b, "player_id"].iloc[0])
+    id_a, name_a = resolve_player(label_a)
+    id_b, name_b = resolve_player(label_b)
 
     col_a, col_b = st.columns(2)
     with col_a:

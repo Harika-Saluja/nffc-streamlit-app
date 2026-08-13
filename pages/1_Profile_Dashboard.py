@@ -27,7 +27,58 @@ con.execute("""
 """)
 
 # -------------------------------
-# Sidebar – Player selector
+# Player-season table + league-switch detection, built early (before
+# the sidebar) so the player selector can be decorated with a data-
+# availability dot. Reused later by the Perfect Signing Score section
+# too, instead of being recomputed a second time.
+# -------------------------------
+player_seasons = con.execute("""
+    WITH per_match AS (
+        SELECT l.player_id, l.player_name, l.match_id, l.minutes_played,
+               m.season, m.competition,
+               COALESCE(e.xg_sum, 0) AS xg_sum, e.pass_success_mean,
+               COALESCE(e.event_count, 0) AS event_count
+        FROM lineups l
+        JOIN matches m ON l.match_id = m.match_id
+        LEFT JOIN events e ON e.match_id = l.match_id AND e.player_id = l.player_id
+    )
+    SELECT player_id, player_name, season, competition,
+           SUM(minutes_played) AS minutes, SUM(xg_sum) AS xg_total,
+           AVG(pass_success_mean) AS pass_success_avg, SUM(event_count) AS events_total
+    FROM per_match GROUP BY player_id, player_name, season, competition
+""").df()
+player_seasons["xg_90"] = np.where(player_seasons["minutes"] > 0,
+    player_seasons["xg_total"] / player_seasons["minutes"] * 90, np.nan)
+player_seasons["events_90"] = np.where(player_seasons["minutes"] > 0,
+    player_seasons["events_total"] / player_seasons["minutes"] * 90, np.nan)
+STYLE_COLS = ["xg_90", "pass_success_avg", "events_90"]
+
+
+def detect_all_league_switches(player_rows: pd.DataFrame):
+    seasons_sorted = sorted(player_rows["season"].dropna().unique())
+    switches = []
+    for i in range(1, len(seasons_sorted)):
+        prev_rows = player_rows[player_rows["season"] == seasons_sorted[i - 1]]
+        curr_rows = player_rows[player_rows["season"] == seasons_sorted[i]]
+        prev_leagues = set(prev_rows["competition"].dropna())
+        curr_leagues = set(curr_rows["competition"].dropna())
+        if prev_leagues and curr_leagues and not (prev_leagues & curr_leagues):
+            prev_team = prev_rows["team_name"].mode()
+            curr_team = curr_rows["team_name"].mode()
+            switches.append({
+                "from_league": list(prev_leagues)[0], "to_league": list(curr_leagues)[0],
+                "from_season": seasons_sorted[i - 1], "to_season": seasons_sorted[i],
+                "from_team": prev_team.iloc[0] if not prev_team.empty else None,
+                "to_team": curr_team.iloc[0] if not curr_team.empty else None,
+            })
+    return switches
+
+
+# -------------------------------
+# Sidebar – Player selector, with a data/score-availability dot:
+# 🟢 = enough data exists to compute at least part of a signing score
+# (a detected league move, matched Catapult data, or performance data)
+# 🔴 = none of those are available for this player yet
 # -------------------------------
 st.sidebar.title("Player Selector")
 
@@ -37,8 +88,34 @@ players = con.execute("""
     ORDER BY player_name
 """).df()
 
-player_name = st.sidebar.selectbox("Select Player", players["player_name"])
-player_id = int(players.loc[players["player_name"] == player_name, "player_id"].iloc[0])
+lightweight_ps = con.execute("""
+    SELECT DISTINCT l.player_id, l.team_name, m.season, m.competition
+    FROM lineups l JOIN matches m ON l.match_id = m.match_id
+""").df()
+has_move_map = {pid: bool(detect_all_league_switches(g)) for pid, g in lightweight_ps.groupby("player_id")}
+
+matched_catapult_ids = set(con.execute("""
+    SELECT DISTINCT x.statsbomb_player_id AS player_id
+    FROM catapult c JOIN crosswalk x ON c.athlete_id = x.athlete_id
+    WHERE x.statsbomb_player_id IS NOT NULL
+""").df()["player_id"])
+
+perf_ids = set(player_seasons.loc[player_seasons["xg_90"].notna(), "player_id"])
+
+
+def has_any_score_data(pid: int) -> bool:
+    return has_move_map.get(pid, False) or (pid in matched_catapult_ids) or (pid in perf_ids)
+
+
+players["has_score"] = players["player_id"].apply(has_any_score_data)
+players["display_label"] = players["player_name"] + players["has_score"].map({True: " 🟢", False: " 🔴"})
+
+selected_label = st.sidebar.selectbox("Select Player", players["display_label"])
+st.sidebar.caption("🟢 : enough data to compute a signing score · 🔴 : not enough data yet")
+
+matched_player = players.loc[players["display_label"] == selected_label]
+player_name = matched_player["player_name"].iloc[0]
+player_id = int(matched_player["player_id"].iloc[0])
 
 st.markdown("---")
 st.header(f"{player_name}")
@@ -209,51 +286,12 @@ if all(h is None for h in hyp_results):
 # PERFECT SIGNING SCORE
 # Combines a lightweight version of each hypothesis's own logic — see
 # the formula breakdown below for exactly what's included and why two
-# of the four components are deliberately simplified.
+# of the four components are deliberately simplified. Reuses the
+# player_seasons / detect_all_league_switches built earlier (above the
+# sidebar) rather than recomputing them here.
 # ---------------------------------------------------------
 st.markdown("---")
 st.header("Perfect Signing Score")
-
-player_seasons = con.execute("""
-    WITH per_match AS (
-        SELECT l.player_id, l.player_name, l.match_id, l.minutes_played,
-               m.season, m.competition,
-               COALESCE(e.xg_sum, 0) AS xg_sum, e.pass_success_mean,
-               COALESCE(e.event_count, 0) AS event_count
-        FROM lineups l
-        JOIN matches m ON l.match_id = m.match_id
-        LEFT JOIN events e ON e.match_id = l.match_id AND e.player_id = l.player_id
-    )
-    SELECT player_id, player_name, season, competition,
-           SUM(minutes_played) AS minutes, SUM(xg_sum) AS xg_total,
-           AVG(pass_success_mean) AS pass_success_avg, SUM(event_count) AS events_total
-    FROM per_match GROUP BY player_id, player_name, season, competition
-""").df()
-player_seasons["xg_90"] = np.where(player_seasons["minutes"] > 0,
-    player_seasons["xg_total"] / player_seasons["minutes"] * 90, np.nan)
-player_seasons["events_90"] = np.where(player_seasons["minutes"] > 0,
-    player_seasons["events_total"] / player_seasons["minutes"] * 90, np.nan)
-STYLE_COLS = ["xg_90", "pass_success_avg", "events_90"]
-
-
-def detect_all_league_switches(player_rows: pd.DataFrame):
-    seasons_sorted = sorted(player_rows["season"].dropna().unique())
-    switches = []
-    for i in range(1, len(seasons_sorted)):
-        prev_rows = player_rows[player_rows["season"] == seasons_sorted[i - 1]]
-        curr_rows = player_rows[player_rows["season"] == seasons_sorted[i]]
-        prev_leagues = set(prev_rows["competition"].dropna())
-        curr_leagues = set(curr_rows["competition"].dropna())
-        if prev_leagues and curr_leagues and not (prev_leagues & curr_leagues):
-            prev_team = prev_rows["team_name"].mode()
-            curr_team = curr_rows["team_name"].mode()
-            switches.append({
-                "from_league": list(prev_leagues)[0], "to_league": list(curr_leagues)[0],
-                "from_season": seasons_sorted[i - 1], "to_season": seasons_sorted[i],
-                "from_team": prev_team.iloc[0] if not prev_team.empty else None,
-                "to_team": curr_team.iloc[0] if not curr_team.empty else None,
-            })
-    return switches
 
 
 def team_ppg(team, season):
