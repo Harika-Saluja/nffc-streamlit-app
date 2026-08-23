@@ -6,7 +6,7 @@ from datetime import datetime
 # -------------------------------
 # Page config
 # -------------------------------
-st.set_page_config(page_title="Data Manager", layout="wide")
+st.set_page_config(page_title="0_DataManager", layout="wide")
 st.title("DATA MANAGER")
 st.caption(
     "Replace the data every dashboard uses — no Python required. Pick "
