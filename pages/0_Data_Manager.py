@@ -8,22 +8,22 @@ from datetime import datetime
 # -------------------------------
 st.set_page_config(page_title="0_DataManager", layout="wide")
 st.title("DATA MANAGER")
-'''st.caption(
-    "Replace the data every dashboard uses — no Python required. Pick "
-    "which type of dataset you're updating, upload a CSV or Excel file "
-    "matching the required columns, and only the dashboards that "
-    "actually use that dataset are affected. Everything else keeps "
-    "using its current data."
-)
-st.warning(
-    "**Important:** on Streamlit Cloud, uploads made here work "
-    "immediately for anyone using the app right now, but the "
-    "underlying files reset whenever the app reboots or redeploys. "
-    "To make an update permanent, download the converted file after "
-    "uploading (button appears below) and commit it into the "
-    "`pages`-adjacent data folder in your GitHub repo, replacing the "
-    "old one there."
-)'''
+#st.caption(
+ #   "Replace the data every dashboard uses — no Python required. Pick "
+  #  "which type of dataset you're updating, upload a CSV or Excel file "
+   # "matching the required columns, and only the dashboards that "
+    #"actually use that dataset are affected. Everything else keeps "
+    #"using its current data."
+#)
+#st.warning(
+ #   "**Important:** on Streamlit Cloud, uploads made here work "
+  #  "immediately for anyone using the app right now, but the "
+   # "underlying files reset whenever the app reboots or redeploys. "
+    #"To make an update permanent, download the converted file after "
+    #"uploading (button appears below) and commit it into the "
+    #"`pages`-adjacent data folder in your GitHub repo, replacing the "
+    #"old one there."
+#)'''
 
 # ===========================================================
 # SCHEMA DEFINITIONS — one entry per dataset this app actually reads.
