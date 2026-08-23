@@ -50,7 +50,8 @@ if not check_password():
 # directly via title=, so they never show up on screen.
 # ===========================================================
 pages = [
-    st.Page("pages/1_Profile_Dashboard.py", title="Profile Profile", default=True),
+    st.Page("pages/0_Data_Manager.py", title="Data Manager"),
+    st.Page("pages/1_Profile_Dashboard.py", title="Profile Dashboard", default=True),
     st.Page("pages/2_League_Adaptation.py", title="League Adaptation"),
     st.Page("pages/3_Workload_And_Injury_Risk.py", title="Workload And Injury Risk"),
     st.Page("pages/4_Age_Optimization.py", title="Age Optimization"),
