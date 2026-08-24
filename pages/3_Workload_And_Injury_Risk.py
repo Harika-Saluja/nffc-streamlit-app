@@ -62,9 +62,9 @@ con.execute("""
 
 # -------------------------------
 # Sidebar – full player roster, with a three-state status dot:
-# 🟢 has training-load data AND a recorded injury
+# 🟢 no training-load data at all (many players won't have any)
 # 🟡 has training-load data, no recorded injury
-# 🔴 no training-load data at all (many players won't have any)
+# 🔴 has training-load data AND a recorded injury
 # -------------------------------
 st.sidebar.title("Player Selector")
 
@@ -92,17 +92,17 @@ all_players["has_injury"] = all_players["player_id"].isin(injury_players)
 
 def status_dot(row) -> str:
     if not row["has_catapult"]:
-        return "🔴"
-    return "🟢" if row["has_injury"] else "🟡"
+        return "🟢"
+    return "🔴" if row["has_injury"] else "🟡"
 
 
 all_players["display_label"] = all_players["player_name"] + " " + all_players.apply(status_dot, axis=1)
 
 selected_label = st.sidebar.selectbox("Select Player", all_players["display_label"])
 st.sidebar.caption(
-    "🟢 : has training-load data and a recorded injury · 🟡 : has "
-    "training-load data, no recorded injury · 🔴 : no training-load "
-    "data at all"
+    "🟢 : no training-load data at all · 🟡 : has training-load data, "
+    "no recorded injury · 🔴 : has training-load data and a recorded "
+    "injury"
 )
 
 matched_player = all_players.loc[all_players["display_label"] == selected_label]
