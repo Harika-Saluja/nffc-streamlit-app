@@ -12,14 +12,14 @@ from datetime import datetime, timezone
 st.set_page_config(page_title="League Adaptation", layout="wide")
 st.title("LEAGUE ADAPTATION")
 
-st.caption(
-    "Data source: StatsBomb open/provided match, lineup, and event data "
-    "spanning multiple competitions and clubs — not a Nottingham Forest-"
-    "exclusive feed. Nottingham Forest is used throughout this dashboard "
-    "as the case-study club within that broader dataset; players from "
-    "other clubs are also selectable below since league-quality and "
-    "percentile calculations require the full multi-club distribution."
-)
+#st.caption(
+#    "Data source: StatsBomb open/provided match, lineup, and event data "
+ #   "spanning multiple competitions and clubs — not a Nottingham Forest-"
+  #  "exclusive feed. Nottingham Forest is used throughout this dashboard "
+   # "as the case-study club within that broader dataset; players from "
+   # "other clubs are also selectable below since league-quality and "
+   # "percentile calculations require the full multi-club distribution."
+#)
 
 # -------------------------------
 # Load data
