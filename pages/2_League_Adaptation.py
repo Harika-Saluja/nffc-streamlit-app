@@ -12,6 +12,15 @@ from datetime import datetime, timezone
 st.set_page_config(page_title="League Adaptation", layout="wide")
 st.title("LEAGUE ADAPTATION")
 
+st.caption(
+    "Data source: StatsBomb open/provided match, lineup, and event data "
+    "spanning multiple competitions and clubs — not a Nottingham Forest-"
+    "exclusive feed. Nottingham Forest is used throughout this dashboard "
+    "as the case-study club within that broader dataset; players from "
+    "other clubs are also selectable below since league-quality and "
+    "percentile calculations require the full multi-club distribution."
+)
+
 # -------------------------------
 # Load data
 # -------------------------------
@@ -137,7 +146,7 @@ def detect_all_league_switches(pdata: pd.DataFrame):
 
 # Precompute, for EVERY player, whether any cross-league move is
 # detected across their tracked seasons — used only to decorate the
-# sidebar selector (🟢 = moved, 🔴 = no detected move in this window).
+# sidebar selector (🟢 = moved, 🔵 = no detected move in this window).
 # Uses a plain dict comprehension (not groupby().apply(...,
 # include_groups=False)) since that kwarg needs pandas 2.2+ and this
 # needs to run on whatever pandas version is actually deployed.
@@ -148,10 +157,13 @@ move_status = pd.Series(
 move_status.index.name = "player_id"
 players = players.merge(move_status, on="player_id", how="left")
 players["has_move"] = players["has_move"].fillna(False)
-players["display_label"] = players["player_name"] + players["has_move"].map({True: " 🟢", False: " 🔴"})
+# NOTE: changed the "no move" indicator from 🔴 to 🔵 — red implied
+# something negative/broken about the player, when it just means
+# "stayed in one league," which is the normal case for most players.
+players["display_label"] = players["player_name"] + players["has_move"].map({True: " 🟢", False: " 🔵"})
 
 selected_label = st.sidebar.selectbox("Select Player", players["display_label"])
-st.sidebar.caption("🟢 : moved leagues within the tracked window · 🔴 : no detected move")
+st.sidebar.caption("🟢 : moved leagues within the tracked window · 🔵 : no detected move — current league shown instead")
 
 matched = players.loc[players["display_label"] == selected_label]
 if matched.empty:
@@ -190,13 +202,152 @@ st.caption(
 
 all_switches = detect_all_league_switches(player_data)
 
+# ===========================================================
+# NO DETECTED MOVE — show a current-league snapshot instead of
+# stopping the page. This is the common case (most players in any
+# dataset haven't switched leagues within the tracked window), so a
+# dead-end message here made the dashboard unusable for the large
+# majority of players. Instead: show their current club, competition,
+# season, and per-90 profile, plus where they sit in their own
+# league's distribution — the same percentile mechanic used for
+# movers in the Detailed Move Analysis section below, just without a
+# before/after comparison since there's no "before" to compare to.
+# ===========================================================
 if not all_switches:
+    latest_season = player_data["season"].dropna().max()
+    current = player_data[player_data["season"] == latest_season]
+
+    if current.empty:
+        st.info(f"No usable season data available for {player_name}.")
+        st.stop()
+
+    current_row = current.iloc[0]
+    current_league = current_row["competition"]
+
+    current_team_row = con.execute(f"""
+        SELECT l.team_name, COUNT(DISTINCT l.match_id) AS n_matches
+        FROM lineups l JOIN matches m ON l.match_id = m.match_id
+        WHERE l.player_id = {player_id} AND m.season = '{latest_season}'
+        GROUP BY l.team_name ORDER BY n_matches DESC LIMIT 1
+    """).df()
+    current_team = current_team_row["team_name"].iloc[0] if not current_team_row.empty else "unknown club"
+
     st.info(
-        f"{player_name} hasn't moved leagues in this dataset's tracked "
-        f"window — either they stayed in one league throughout, or the "
-        f"move happened outside this window."
+        f"**{player_name} hasn't changed leagues within this dataset's "
+        f"tracked window.** They remain at **{current_team}** in the "
+        f"**{current_league}** ({latest_season}) — shown below is their "
+        f"current-league snapshot rather than a before/after move "
+        f"comparison, since there's no prior league to compare against."
     )
+
+    st.subheader(f"Current League Snapshot — {current_league} ({latest_season})")
+
+    snap_cols = st.columns(3)
+    for i, (label_key, (col, disp_label)) in enumerate(metric_map.items()):
+        val = current_row[col]
+        snap_cols[i].metric(
+            disp_label,
+            f"{val:.2f}" if pd.notna(val) else "—",
+            help=METRIC_DEFINITIONS[label_key],
+        )
+
+    # Percentile within their current league — same mechanic as the
+    # "Where This Player Sits vs. the New League" panel for movers,
+    # just relabelled since there's no "new" league here, only their
+    # current one.
+    st.markdown("---")
+    st.subheader("Where This Player Sits vs. Their League")
+
+    snap_metric_choice = st.radio(
+        "Chart metric:", list(metric_map.keys()), horizontal=True,
+        key="snapshot_metric", help=METRIC_DEFINITIONS_HELP,
+    )
+    snap_col, snap_label = metric_map[snap_metric_choice]
+
+    snap_dist = player_seasons[
+        (player_seasons["season"] == latest_season)
+        & (player_seasons["competition"] == current_league)
+    ][snap_col].dropna()
+
+    if len(snap_dist) < 5:
+        st.info("Not enough players in this league/season to build a distribution.")
+    else:
+        snap_value = current_row[snap_col]
+        if pd.notna(snap_value):
+            snap_percentile = float((snap_dist < snap_value).mean() * 100)
+
+            snap_fig = go.Figure()
+            snap_fig.add_trace(go.Box(
+                x=snap_dist, name=current_league, boxpoints="all",
+                jitter=0.6, pointpos=0, marker_color="lightgray", line_color="lightgray",
+                fillcolor="rgba(0,0,0,0)",
+            ))
+            snap_fig.add_trace(go.Scatter(
+                x=[snap_value], y=[current_league],
+                mode="markers", marker=dict(size=16, color="steelblue", symbol="diamond"),
+                name=player_name,
+            ))
+            snap_fig.update_layout(
+                title=f"{snap_label} vs. all {current_league} players ({latest_season})",
+                xaxis_title=snap_label, height=250, showlegend=True,
+            )
+            st.plotly_chart(snap_fig, use_container_width=True)
+
+            st.metric(
+                f"{snap_label} percentile",
+                f"{snap_percentile:.0f}th percentile",
+                help=(
+                    "**What it is:** where the player's value on this "
+                    "metric ranks against every other player in their "
+                    "current league that season.\n\n"
+                    "**How it's calculated:** the share of the league's "
+                    "players whose value was LOWER than this player's, "
+                    "× 100.\n\n" + METRIC_DEFINITIONS[snap_metric_choice]
+                ),
+            )
+        else:
+            st.info(f"{player_name} has no recorded {snap_label} value to compare.")
+
+    st.markdown("---")
+
+    # Save a scoped verdict for the Myth Verdict dashboard even for
+    # non-movers — same JSON shape as the mover path below, but with
+    # the move-specific fields set to None and an explicit "no_move"
+    # flag so the Myth Verdict page can distinguish and label these
+    # correctly rather than mishandling missing keys.
+    h1_verdict_record = {
+        "hypothesis": "H1 — League Adaptation",
+        "scope": (
+            "per-player, current-league snapshot (no detected league "
+            "move) — NOT a pooled population-level test like H2/H3/H4; "
+            "no before/after comparison is possible for this player."
+        ),
+        "player_name": player_name,
+        "player_id": player_id,
+        "no_move_detected": True,
+        "current_club": current_team,
+        "current_league": current_league,
+        "current_season": latest_season,
+        "n_total_tracked_moves_for_player": 0,
+        "performance_change_verdict": None,
+        "style_similarity": None,
+        "team_ability_ppg": None,
+        "league_quality_proxy": None,
+        "same_role": None,
+        "destination_percentile": None,
+        "data_confidence": None,
+        "last_computed": datetime.now(timezone.utc).isoformat(),
+    }
+    with open("verdict_h1.json", "w") as f:
+        json.dump(h1_verdict_record, f, indent=2, default=str)
+
     st.stop()
+
+# ===========================================================
+# BELOW THIS POINT: unchanged mover path — a genuine league switch
+# was detected, so the full four-factor breakdown and Detailed Move
+# Analysis run as before.
+# ===========================================================
 
 sequence_parts = [f"{all_switches[0]['from_league']} ({all_switches[0]['from_season']})"]
 for sw in all_switches:
@@ -608,6 +759,7 @@ h1_verdict_record = {
     ),
     "player_name": player_name,
     "player_id": player_id,
+    "no_move_detected": False,
     "move": {
         "from_league": league_switch["from_league"],
         "from_season": league_switch["from_season"],
