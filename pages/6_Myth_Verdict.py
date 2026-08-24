@@ -11,10 +11,10 @@ import os
 # -------------------------------
 st.set_page_config(page_title="Myth Verdict", layout="wide")
 st.title("MYTH VERDICT")
-st.caption(
-    "A summary scorecard across all four tested hypotheses, plus a "
-    "per-player signing score and recommendation that combines them."
-)
+#st.caption(
+  #  "A summary scorecard across all four tested hypotheses, plus a "
+   # "per-player signing score and recommendation that combines them."
+#)
 
 # ===========================================================
 # PART 1 — HYPOTHESIS SCORECARD
@@ -112,11 +112,11 @@ for col, h in zip(cols, hypotheses):
             with st.expander("Caveat"):
                 st.caption(h["caveat"])
 
-st.caption(
-    "Badges are shown per hypothesis independently — they are not "
-    "averaged or combined into one score, since each uses a different "
-    "test, outcome variable, and (for H1) scope."
-)
+#st.caption(
+ #   "Badges are shown per hypothesis independently — they are not "
+  #  "averaged or combined into one score, since each uses a different "
+   # "test, outcome variable, and (for H1) scope."
+#)
 
 # ===========================================================
 # PART 2 — SIGNING SCORE ENGINE
@@ -554,8 +554,8 @@ with tab2:
     else:
         st.info("Not enough data on one or both players to compare directly.")
 
-st.caption(
-    "This score combines lightweight proxies from across all four "
-    "hypothesis pages — it is a convenience readout for exploring "
-    "trade-offs between players, not a validated recruitment model."
-)
+#st.caption(
+ #   "This score combines lightweight proxies from across all four "
+  #  "hypothesis pages — it is a convenience readout for exploring "
+   # "trade-offs between players, not a validated recruitment model."
+#)
